@@ -1,0 +1,17 @@
+type: code
+files:
+- name: src/Main.java
+  visible: true
+  text: |-
+    class Primitive {
+        public static boolean toPrimitive(Boolean b) {
+            return true;
+        }
+    }
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/3014#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Mon, 25 Oct 2021 07:37:21 UTC
+record: -1

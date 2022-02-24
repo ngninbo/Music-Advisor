@@ -1,0 +1,22 @@
+type: code
+files:
+- name: src/Main.java
+  visible: true
+  text: |-
+    class ManufacturingController {
+
+        public static String requestProduct(String product) {
+            // write your code here
+        }
+
+        public static int getNumberOfProducts() {
+            // write your code here
+        }
+    }
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/14279#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Tue, 19 Oct 2021 12:51:23 UTC
+record: -1

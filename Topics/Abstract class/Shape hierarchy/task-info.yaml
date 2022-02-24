@@ -1,0 +1,21 @@
+type: code
+files:
+- name: src/Main.java
+  visible: true
+  text: |-
+    abstract class Shape {
+
+        abstract double getPerimeter();
+
+        abstract double getArea();
+    }
+  learner_created: false
+- name: src/AbtractClass.java
+  visible: true
+  learner_created: true
+feedback_link: https://hyperskill.org/learn/step/2120#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Fri, 22 Oct 2021 09:32:29 UTC
+record: -1
