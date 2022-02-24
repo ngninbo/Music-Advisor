@@ -112,6 +112,7 @@ public class AdvisorControllerImpl implements AdvisorController {
             String command = scanner.nextLine();
             if ("exit".equals(command)) {
                 System.out.println(GOODBYE);
+                System.exit(0); // TODO: Remove/comment this line before code check
             } else if ("auth".equals(command)){
                 auth();
             } else if (accessGranted) {
