@@ -39,4 +39,9 @@ public class GlobalVariables {
     public static final String AUTHORIZATION_CODE_NOT_FOUND_TRY_AGAIN_TEXT = "<p style=\"color: red\">Authorization code not found. Try again.</p>";
     public static final String GOT_THE_CODE_RETURN_BACK_TEXT = "<p style=\"color: green\">Got the code. Return back to your program.</p>";
     public static final String UNKNOWN_CATEGORY_NAME = "Unknown category name.";
+    public static final String UNKNOWN_COMMAND = "Unknown command";
+    public static final String ACCESS_ALREADY_PROVIDED = "Access already provided!";
+    public static final String REGEX = "^%s[\\s\\w].*[\\w]$";
+    public static final String PLAYLISTS = "playlists";
+    public static final String PLAYLISTS_REGEX = String.format(REGEX, PLAYLISTS);
 }

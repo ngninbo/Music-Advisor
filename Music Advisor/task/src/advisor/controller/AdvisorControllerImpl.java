@@ -36,10 +36,8 @@ public class AdvisorControllerImpl implements AdvisorController {
 
     @Override
     public void showView(String command) {
-        String playlists = "playlists";
-        String regex = String.format("^%s.*", playlists);
-        if (Pattern.matches(regex, command)) {
-            String category = command.substring(playlists.length()).trim();
+        if (Pattern.matches(PLAYLISTS_REGEX, command)) {
+            String category = command.substring(PLAYLISTS.length()).trim();
             viewPlaylistByCategory(category);
         } else {
             showViewByName(command);
@@ -64,13 +62,19 @@ public class AdvisorControllerImpl implements AdvisorController {
             case "prev":
                 viewer.viewPrev();
                 break;
+            default:
+                System.out.println(UNKNOWN_COMMAND);
         }
     }
 
     @Override
     public void auth() {
-        oAuth.authorizeAccess();
-        accessGranted = oAuth.isCodeReceived();
+        if (!accessGranted) {
+            oAuth.authorizeAccess();
+            accessGranted = oAuth.isCodeReceived();
+        } else {
+            System.out.println(ACCESS_ALREADY_PROVIDED);
+        }
     }
 
     @Override
@@ -107,12 +111,13 @@ public class AdvisorControllerImpl implements AdvisorController {
 
     @Override
     public void start() {
-        while (true) {
+        boolean exit = false;
+        while (!exit) {
             Scanner scanner = new Scanner(System.in);
             String command = scanner.nextLine();
             if ("exit".equals(command)) {
                 System.out.println(GOODBYE);
-                System.exit(0); // TODO: Remove/comment this line before code check
+                exit = true; // TODO: Remove/comment this line before code check
             } else if ("auth".equals(command)){
                 auth();
             } else if (accessGranted) {
