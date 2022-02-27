@@ -45,12 +45,7 @@ public class MusicService {
      */
     public List<Item<String>> getCategories(String accessToken, String tokenType) {
 
-        responseBody = client.createHttpRequest(accessToken, tokenType, api + CATEGORIES_ENDPOINT)
-                .sendHttpRequest();
-
-        categoryMap = HttpResponseParser.extractCategoryMap(responseBody);
-
-        return HttpResponseParser.extractCategories(responseBody);
+        return new ArrayList<>(getCategoryMap(accessToken, tokenType).values());
     }
 
     public Map<String, Item<String>> getCategoryMap(String accessToken, String tokenType) {
@@ -94,10 +89,10 @@ public class MusicService {
      */
     public List<Item<String>> getPlaylistByCategory(String category, String accessToken, String tokenType) {
         List<Item<String>> playlists = new ArrayList<>();
-        Optional<String> categoryId = getCategoryId(category, accessToken, tokenType);
-        if (categoryId.isPresent()) {
+        Optional<String> id = getCategoryId(category, accessToken, tokenType);
+        if (id.isPresent()) {
             responseBody = client.createHttpRequest(accessToken, tokenType, api + CATEGORIES_ENDPOINT
-                    + "/" + categoryId.get() + "/playlists").sendHttpRequest();
+                    + "/" + id.get() + "/" + PLAYLISTS).sendHttpRequest();
             if (HttpResponseParser.httpResponseBodyContainsError(responseBody)) {
                 System.out.println(HttpResponseParser.getErrorMessage(responseBody));
             } else {

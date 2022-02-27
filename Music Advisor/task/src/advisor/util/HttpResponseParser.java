@@ -9,9 +9,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static advisor.util.GlobalVariables.PLAYLISTS;
+
 public class HttpResponseParser {
 
-    private static JsonObject jsonObject;
     private static List<Item<String>> results;
     /**
      * Extract all playlists from http responses body
@@ -21,13 +22,11 @@ public class HttpResponseParser {
     public static List<Item<String>> extractPlaylists(String response) {
 
         results = new ArrayList<>();
-        jsonObject = parseHttpResponse(response);
-        jsonObject = jsonObject.get("playlists").getAsJsonObject();
-        JsonArray items = jsonObject.get("items").getAsJsonArray();
-        for (int i = 0; i < items.size(); i++) {
-            JsonObject item = items.get(i).getAsJsonObject();
-            String name = item.get("name").getAsString();
-            String url = item.get("external_urls").getAsJsonObject().get("spotify").getAsString();
+        JsonArray playlists = parseHttpResponseAndGetItems(response, PLAYLISTS);
+        for (int i = 0; i < playlists.size(); i++) {
+            JsonObject playlist = playlists.get(i).getAsJsonObject();
+            String name = playlist.get("name").getAsString();
+            String url = getExternalUrl(playlist);
             results.add(new Item<>(name + "\n" + url + "\n"));
         }
 
@@ -36,53 +35,50 @@ public class HttpResponseParser {
 
     /**
      * Parse given http response body for extracting new albums
-     * @param body Http response body
+     * @param responseBody Http response body
      * @return List of new releases
      */
-    public static List<Item<String>> extractReleases(String body) {
+    public static List<Item<String>> extractReleases(String responseBody) {
         results = new ArrayList<>();
         List<String> artistNames;
 
-        jsonObject = parseHttpResponse(body);
-        JsonArray items = jsonObject.get("albums").getAsJsonObject().getAsJsonArray("items");
+        JsonArray albums = parseHttpResponseAndGetItems(responseBody, "albums");
 
-        for (int i = 0; i < items.size(); i++) {
+        for (int i = 0; i < albums.size(); i++) {
+            JsonObject album = albums.get(i).getAsJsonObject();
+            String title = album.get("name").getAsString();
+            JsonArray artists = album.get("artists").getAsJsonArray();
+
             artistNames = new ArrayList<>();
-            JsonObject item = items.get(i).getAsJsonObject();
-            String title = item.get("name").getAsString();
-            JsonArray artists = item.get("artists").getAsJsonArray();
-
             for (int j = 0; j < artists.size(); j++) {
                 JsonObject artist = artists.get(j).getAsJsonObject();
                 String artistName = artist.get("name").getAsString();
                 artistNames.add(artistName);
             }
 
-            String externalUrl = item.get("external_urls").getAsJsonObject().get("spotify").getAsString();
+            String externalUrl = getExternalUrl(album);
 
-            String[] artistes = new String[artistNames.size()];
-
-            Item<String> newRelease = new Item<>(title + "\n" + Arrays.toString(artistNames.toArray(artistes)) + "\n"
+            Item<String> newRelease = new Item<>(title + "\n" + artistNames + "\n"
                     + externalUrl + "\n");
             results.add(newRelease);
         }
         return results;
     }
 
-    public static List<Item<String>> extractCategories(String jsonString) {
-        results = new ArrayList<>();
-        jsonObject = parseHttpResponse(jsonString);
-        JsonArray items = jsonObject.get("categories").getAsJsonObject().getAsJsonArray("items");
-        IntStream.range(0, items.size())
-                .mapToObj(i -> items.get(i).getAsJsonObject())
-                .map(item -> item.get("name").getAsString())
-                .forEach(name -> results.add(new Item<>(name)));
-
-        return results;
+    private static String getExternalUrl(JsonObject jsonObject) {
+        return jsonObject.get("external_urls").getAsJsonObject().get("spotify").getAsString();
     }
 
     public static JsonObject parseHttpResponse(String jsonString) {
         return JsonParser.parseString(jsonString).getAsJsonObject();
+    }
+
+    public static JsonArray parseHttpResponseAndGetItems(String responseBody, String key) {
+        return JsonParser.parseString(responseBody)
+                .getAsJsonObject()
+                .get(key)
+                .getAsJsonObject()
+                .getAsJsonArray("items");
     }
 
     public static boolean httpResponseBodyContainsError(String httpResponseBody) {
@@ -103,14 +99,14 @@ public class HttpResponseParser {
 
     public static Map<String, Item<String>> extractCategoryMap(String responseBody) {
 
-        jsonObject = parseHttpResponse(responseBody);
-        JsonArray items = jsonObject.get("categories").getAsJsonObject().getAsJsonArray("items");
+        JsonArray categories = parseHttpResponseAndGetItems(responseBody, "categories");
 
-        return IntStream.range(0, items.size())
-                .mapToObj(i -> items.get(i).getAsJsonObject())
-                .collect(Collectors.toMap(item -> item.get("id")
-                        .getAsString(), item -> new Item<>(item.get("name")
-                        .getAsString()), (a, b) -> b)
+        return IntStream.range(0, categories.size())
+                .mapToObj(i -> categories.get(i).getAsJsonObject())
+                .collect(Collectors.toMap(
+                        item -> item.get("id").getAsString(),
+                        item -> new Item<>(item.get("name").getAsString()),
+                        (a, b) -> b)
                 );
     }
 }
