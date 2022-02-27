@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class HttpResponseParser {
@@ -73,7 +74,7 @@ public class HttpResponseParser {
         jsonObject = parseHttpResponse(jsonString);
         JsonArray items = jsonObject.get("categories").getAsJsonObject().getAsJsonArray("items");
         IntStream.range(0, items.size())
-                .mapToObj(i -> (JsonObject) items.get(i))
+                .mapToObj(i -> items.get(i).getAsJsonObject())
                 .map(item -> item.get("name").getAsString())
                 .forEach(name -> results.add(new Item<>(name)));
 
@@ -101,14 +102,15 @@ public class HttpResponseParser {
     }
 
     public static Map<String, Item<String>> extractCategoryMap(String responseBody) {
-        Map<String, Item<String>> categoriesMap = new HashMap<>();
+
         jsonObject = parseHttpResponse(responseBody);
         JsonArray items = jsonObject.get("categories").getAsJsonObject().getAsJsonArray("items");
 
-        IntStream.range(0, items.size())
-                .mapToObj(i -> (JsonObject) items.get(i))
-                .forEach(item -> categoriesMap.put(item.get("id").getAsString(), new Item<>(item.get("name").getAsString())));
-
-        return categoriesMap;
+        return IntStream.range(0, items.size())
+                .mapToObj(i -> items.get(i).getAsJsonObject())
+                .collect(Collectors.toMap(item -> item.get("id")
+                        .getAsString(), item -> new Item<>(item.get("name")
+                        .getAsString()), (a, b) -> b)
+                );
     }
 }
