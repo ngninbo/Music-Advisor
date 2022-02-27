@@ -25,7 +25,7 @@ public class GlobalVariables {
     public static final String FEATURED_PLAYLIST_ENDPOINT = "/v1/browse/featured-playlists";
 
     // Text constants
-    public static final String REQUEST_DATA_PLACEHOLDER = "grant_type=%s&code=%s&redirect_uri=%s&client_id=%s&client_secret=%s";
+    public static final String REQUEST_PATH_PARAMETERS = "grant_type=%s&code=%s&redirect_uri=%s&client_id=%s&client_secret=%s";
     public static final String AUTHORIZATION_LINK = "%s?client_id=%s&redirect_uri=%s&response_type=%s";
     public static final String USER_REDIRECT_LINK_MSG = "use this link to request the access code:";
     public static final String WAITING_FOR_CODE_MSG = "waiting for code...";

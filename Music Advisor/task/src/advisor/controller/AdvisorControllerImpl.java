@@ -57,10 +57,10 @@ public class AdvisorControllerImpl implements AdvisorController {
                 viewCategories();
                 break;
             case "next":
-                viewer.viewNext();
+                viewer.nextPage();
                 break;
             case "prev":
-                viewer.viewPrev();
+                viewer.prevPage();
                 break;
             default:
                 System.out.println(UNKNOWN_COMMAND);
@@ -82,7 +82,7 @@ public class AdvisorControllerImpl implements AdvisorController {
         items = MusicService.init(resourceUrl)
                 .getNewReleases(oAuth.getAccessToken(), oAuth.getTokenType());
 
-        viewer.setStrategy(new ViewerContext(items, page)).viewFirst();
+        viewer.setStrategy(new ViewerContext(items, page)).nextPage();
     }
 
     @Override
@@ -90,7 +90,7 @@ public class AdvisorControllerImpl implements AdvisorController {
         items = MusicService.init(resourceUrl)
                 .getFeaturedPlaylist(oAuth.getAccessToken(), oAuth.getTokenType());
 
-        viewer.setStrategy(new ViewerContext(items, page)).viewFirst();
+        viewer.setStrategy(new ViewerContext(items, page)).nextPage();
     }
 
     @Override
@@ -98,7 +98,7 @@ public class AdvisorControllerImpl implements AdvisorController {
         items = MusicService.init(resourceUrl)
                 .getCategories(oAuth.getAccessToken(), oAuth.getTokenType());
 
-        viewer.setStrategy(new ViewerContext(items, page)).viewFirst();
+        viewer.setStrategy(new ViewerContext(items, page)).nextPage();
     }
 
     @Override
@@ -106,7 +106,7 @@ public class AdvisorControllerImpl implements AdvisorController {
         items = MusicService.init(resourceUrl)
                 .getPlaylistByCategory(category, oAuth.getAccessToken(), oAuth.getTokenType());
 
-        viewer.setStrategy(new ViewerContext(items, page)).viewFirst();
+        viewer.setStrategy(new ViewerContext(items, page)).nextPage();
     }
 
     @Override

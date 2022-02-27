@@ -20,8 +20,10 @@ public class ViewerContext implements ItemViewStrategy {
     private boolean isLastPage;
 
     {
-        this.actualPage = 1;
+        this.actualPage = 0;
         this.start = 0;
+        this.isFirstPage = true;
+        this.isLastPage = false;
     }
 
     public ViewerContext(List<Item<String>> items, int page) {
@@ -33,33 +35,25 @@ public class ViewerContext implements ItemViewStrategy {
     }
 
     @Override
-    public void viewFirst() {
-        printItemsWithPageReport();
-        this.isFirstPage = true;
-        this.isLastPage = false;
-    }
+    public void prev() {
 
-    @Override
-    public void viewPrev() {
-        if (!isFirstPage) {
+        if (start >= page) {
             end = start;
             start -= page;
             actualPage -= 1;
-            isFirstPage = actualPage == 1;
+            isFirstPage = actualPage == 0;
             isLastPage = actualPage == totalPages;
             printItemsWithPageReport();
         } else {
             System.out.println(NO_MORE_PAGES);
-            isFirstPage = actualPage == 1;
-            isLastPage = actualPage == totalPages;
         }
     }
 
     @Override
-    public void viewNext() {
+    public void next() {
 
         if (!isLastPage) {
-            start += page;
+            start = isFirstPage ? start : start + page;
             int nextEntries = start + page;
             end = nextEntries > items.size() ? end + items.size() % page : nextEntries;
             actualPage += 1;
@@ -67,9 +61,9 @@ public class ViewerContext implements ItemViewStrategy {
         } else {
             System.out.println(NO_MORE_PAGES);
         }
-        isFirstPage = actualPage == 1;
-        isLastPage = actualPage == totalPages;
 
+        isFirstPage = actualPage == 0;
+        isLastPage = actualPage == totalPages;
     }
 
     private void printItemsWithPageReport() {

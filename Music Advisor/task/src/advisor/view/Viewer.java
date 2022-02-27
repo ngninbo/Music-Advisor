@@ -9,15 +9,11 @@ public class Viewer {
         return this;
     }
 
-    public void viewFirst() {
-        strategy.viewFirst();
+    public void prevPage() {
+        strategy.prev();
     }
 
-    public void viewPrev() {
-        strategy.viewPrev();
-    }
-
-    public void viewNext() {
-        strategy.viewNext();
+    public void nextPage() {
+        strategy.next();
     }
 }

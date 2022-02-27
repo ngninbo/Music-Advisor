@@ -47,7 +47,7 @@ public class BaseOAuth {
     }
 
     private void requestAccessToken() {
-        String requestData = String.format(REQUEST_DATA_PLACEHOLDER,
+        String requestData = String.format(REQUEST_PATH_PARAMETERS,
                 GRANT_TYPE, accessCode, REDIRECT_URL, CLIENT_ID, CLIENT_SECRET);
 
         String response = Client.getClientInstance().createHttpPostRequest(host + TOKEN_ENDPOINT, requestData)
