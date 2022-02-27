@@ -25,7 +25,7 @@ public class HttpResponseParser {
         jsonObject = jsonObject.get("playlists").getAsJsonObject();
         JsonArray items = jsonObject.get("items").getAsJsonArray();
         for (int i = 0; i < items.size(); i++) {
-            JsonObject item = (JsonObject) items.get(i);
+            JsonObject item = items.get(i).getAsJsonObject();
             String name = item.get("name").getAsString();
             String url = item.get("external_urls").getAsJsonObject().get("spotify").getAsString();
             results.add(new Item<>(name + "\n" + url + "\n"));
@@ -48,12 +48,12 @@ public class HttpResponseParser {
 
         for (int i = 0; i < items.size(); i++) {
             artistNames = new ArrayList<>();
-            JsonObject item = (JsonObject) items.get(i);
+            JsonObject item = items.get(i).getAsJsonObject();
             String title = item.get("name").getAsString();
             JsonArray artists = item.get("artists").getAsJsonArray();
 
             for (int j = 0; j < artists.size(); j++) {
-                JsonObject artist = (JsonObject) artists.get(j);
+                JsonObject artist = artists.get(j).getAsJsonObject();
                 String artistName = artist.get("name").getAsString();
                 artistNames.add(artistName);
             }
