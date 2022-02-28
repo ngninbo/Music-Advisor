@@ -5,12 +5,9 @@ import advisor.models.Item;
 import advisor.services.MusicService;
 import advisor.view.Viewer;
 import advisor.view.ViewerContext;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static advisor.util.GlobalVariables.*;
 
