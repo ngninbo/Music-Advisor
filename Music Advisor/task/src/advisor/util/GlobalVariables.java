@@ -41,7 +41,5 @@ public class GlobalVariables {
     public static final String UNKNOWN_CATEGORY_NAME = "Unknown category name.";
     public static final String UNKNOWN_COMMAND = "Unknown command";
     public static final String ACCESS_ALREADY_PROVIDED = "Access already provided!";
-    public static final String REGEX = "^%s[\\s\\w].*[\\w]$";
     public static final String PLAYLISTS = "playlists";
-    public static final String PLAYLISTS_REGEX = String.format(REGEX, PLAYLISTS);
 }

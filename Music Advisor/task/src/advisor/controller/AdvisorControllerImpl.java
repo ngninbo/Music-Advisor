@@ -3,10 +3,12 @@ package advisor.controller;
 import advisor.auth.BaseOAuth;
 import advisor.models.Item;
 import advisor.services.MusicService;
+import advisor.services.MusicServiceBuilder;
 import advisor.view.Viewer;
 import advisor.view.ViewerContext;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static advisor.util.GlobalVariables.*;
@@ -14,6 +16,7 @@ import static advisor.util.GlobalVariables.*;
 public class AdvisorControllerImpl implements AdvisorController {
 
     private final BaseOAuth oAuth;
+    private MusicService musicService;
     private final String resourceUrl;
     private boolean accessGranted;
     private final int page;
@@ -29,13 +32,15 @@ public class AdvisorControllerImpl implements AdvisorController {
     public AdvisorControllerImpl(String[] args) {
         oAuth = BaseOAuth.init(args[1] != null ? args[1] : ACCOUNTS_SPOTIFY_URL);
         int page = args[5] != null ? Integer.parseInt(args[5]) : 5;
-        this.resourceUrl = args[3];
+        resourceUrl = args[3];
         this.page = page;
     }
 
     @Override
-    public void showView(String command) {
-        if (Pattern.matches(PLAYLISTS_REGEX, command)) {
+    public void processCommand(String command) {
+        Pattern pattern = Pattern.compile(PLAYLISTS);
+        Matcher matcher = pattern.matcher(command);
+        if (matcher.find()) {
             String category = command.substring(PLAYLISTS.length()).trim();
             viewPlaylistByCategory(category);
         } else {
@@ -71,6 +76,12 @@ public class AdvisorControllerImpl implements AdvisorController {
         if (!accessGranted) {
             oAuth.authorizeAccess();
             accessGranted = oAuth.isCodeReceived();
+            musicService = MusicServiceBuilder.init()
+                    .withClient()
+                    .withResourceUrl(resourceUrl)
+                    .withAccessToken(oAuth.getAccessToken())
+                    .withTokenType(oAuth.getTokenType())
+                    .build();
         } else {
             System.out.println(ACCESS_ALREADY_PROVIDED);
         }
@@ -78,34 +89,35 @@ public class AdvisorControllerImpl implements AdvisorController {
 
     @Override
     public void viewNewAlbums() {
-        items = MusicService.init(resourceUrl)
-                .getNewReleases(oAuth.getAccessToken(), oAuth.getTokenType());
+        items = musicService.getNewReleases();
 
         viewer.setStrategy(new ViewerContext(items, page)).nextPage();
     }
 
     @Override
     public void viewFeaturePlaylist() {
-        items = MusicService.init(resourceUrl)
-                .getFeaturedPlaylist(oAuth.getAccessToken(), oAuth.getTokenType());
+        items = musicService.getFeaturedPlaylist();
 
         viewer.setStrategy(new ViewerContext(items, page)).nextPage();
     }
 
     @Override
     public void viewCategories() {
-        items = MusicService.init(resourceUrl)
-                .getCategories(oAuth.getAccessToken(), oAuth.getTokenType());
+        items = musicService.getCategories();
 
         viewer.setStrategy(new ViewerContext(items, page)).nextPage();
     }
 
     @Override
     public void viewPlaylistByCategory(String category) {
-        items = MusicService.init(resourceUrl)
-                .getPlaylistByCategory(category, oAuth.getAccessToken(), oAuth.getTokenType());
+        items = musicService.getPlaylistByCategory(category);
 
-        viewer.setStrategy(new ViewerContext(items, page)).nextPage();
+        if (items.size() > 0) {
+            viewer.setStrategy(new ViewerContext(items, page)).nextPage();
+        } else {
+            System.out.println(UNKNOWN_CATEGORY_NAME);
+        }
+
     }
 
     @Override
@@ -120,7 +132,7 @@ public class AdvisorControllerImpl implements AdvisorController {
             } else if ("auth".equals(command)){
                 auth();
             } else if (accessGranted) {
-                this.showView(command);
+                this.processCommand(command);
             } else {
                 System.out.println(PROVIDE_ACCESS_FOR_APPLICATION);
             }

@@ -7,7 +7,7 @@ package advisor.controller;
  */
 public interface AdvisorController {
 
-    void showView(String command);
+    void processCommand(String command);
     void showViewByName(String viewName);
     void auth();
     void viewNewAlbums();

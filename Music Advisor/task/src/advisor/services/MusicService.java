@@ -13,95 +13,73 @@ import static advisor.util.GlobalVariables.*;
 
 /**
  * Service class implementing methods for getting list of categories, new albums, playlists for the users spotify account
- * using the spotify web api
+ * using the spotify web resourceUrl
  *
  * @author Beauclair Dongmo Ngnintedem
  */
-public class MusicService {
-
-    private final String api;
-    private static String responseBody;
-    private static final Client client;
+public class MusicService implements RemoteMusicService {
+    
+    private String responseBody;
+    private final Client client;
+    private final String resourceUrl;
+    private final String accessToken;
+    private final String tokenType;
     private Map<String, Item<String>> categoryMap;
 
-    static {
-        client = Client.getClientInstance();
+    public MusicService(Client client, String resourceUrl, String accessToken, String tokenType) {
+        this.client = client;
+        this.resourceUrl = resourceUrl;
+        this.accessToken = accessToken;
+        this.tokenType = tokenType;
+    }
+    
+    @Override
+    public List<Item<String>> getCategories() {
+
+        return new ArrayList<>(getCategoryMap().values());
     }
 
-    private MusicService(String api) {
-        this.api = api;
-    }
+    public Map<String, Item<String>> getCategoryMap() {
 
-    public static MusicService init(String api) {
-        return new MusicService(api);
-    }
-
-    /**
-     * Get list of categories
-     *
-     * @param accessToken access token (user specific)
-     * @param tokenType   token type (user specific)
-     * @return List of categories
-     */
-    public List<Item<String>> getCategories(String accessToken, String tokenType) {
-
-        return new ArrayList<>(getCategoryMap(accessToken, tokenType).values());
-    }
-
-    public Map<String, Item<String>> getCategoryMap(String accessToken, String tokenType) {
-
-        responseBody = client.createHttpRequest(accessToken, tokenType, api + CATEGORIES_ENDPOINT)
+        responseBody = client.createHttpRequest(accessToken, tokenType, resourceUrl + CATEGORIES_ENDPOINT)
                 .sendHttpRequest();
 
         return HttpResponseParser.extractCategoryMap(responseBody);
     }
 
-    public List<Item<String>> getNewReleases(String accessToken, String tokenType) {
+    @Override
+    public List<Item<String>> getNewReleases() {
 
-        responseBody = client.createHttpRequest(accessToken, tokenType, api + RELEASE_ENDPOINT).sendHttpRequest();
+        responseBody = client.createHttpRequest(accessToken, tokenType, resourceUrl + RELEASE_ENDPOINT).sendHttpRequest();
 
         return HttpResponseParser.extractReleases(responseBody);
     }
 
-    /**
-     * Fetch available featured playlists
-     *
-     * @param accessToken access token
-     * @param tokenType   token type
-     * @return List of playlists
-     */
-    public List<Item<String>> getFeaturedPlaylist(String accessToken, String tokenType) {
+    @Override
+    public List<Item<String>> getFeaturedPlaylist() {
 
-        responseBody = client.createHttpRequest(accessToken, tokenType, api + FEATURED_PLAYLIST_ENDPOINT)
+        responseBody = client.createHttpRequest(accessToken, tokenType, resourceUrl + FEATURED_PLAYLIST_ENDPOINT)
                 .sendHttpRequest();
 
         return HttpResponseParser.extractPlaylists(responseBody);
     }
 
-
-    /**
-     * Fetch all playlist by given category
-     *
-     * @param category    category name
-     * @param accessToken access Token
-     * @param tokenType   token type
-     * @return List of playlists
-     */
-    public List<Item<String>> getPlaylistByCategory(String category, String accessToken, String tokenType) {
-        List<Item<String>> playlists = new ArrayList<>();
-        Optional<String> id = getCategoryId(category, accessToken, tokenType);
+    @Override
+    public List<Item<String>> getPlaylistByCategory(String category) {
+        Optional<String> id = getCategoryId(category);
         if (id.isPresent()) {
-            responseBody = client.createHttpRequest(accessToken, tokenType, api + CATEGORIES_ENDPOINT
-                    + "/" + id.get() + "/" + PLAYLISTS).sendHttpRequest();
+            responseBody = client.createHttpRequest(accessToken, 
+                    tokenType, 
+                    String.format("%s/%s/%s", resourceUrl + CATEGORIES_ENDPOINT, id.get(), PLAYLISTS)
+                    ).sendHttpRequest();
             if (HttpResponseParser.httpResponseBodyContainsError(responseBody)) {
                 System.out.println(HttpResponseParser.getErrorMessage(responseBody));
             } else {
-                playlists = HttpResponseParser.extractPlaylists(responseBody);
+                return HttpResponseParser.extractPlaylists(responseBody);
             }
-        } else {
-            System.out.println(UNKNOWN_CATEGORY_NAME);
         }
-        return playlists;
+        
+        return List.of();
     }
 
     /**
@@ -110,9 +88,9 @@ public class MusicService {
      * @param category category name
      * @return Optional Category id
      */
-    private Optional<String> getCategoryId(String category, String accessToken, String tokenType) {
+    private Optional<String> getCategoryId(String category) {
         if (categoryMap == null) {
-            categoryMap = getCategoryMap(accessToken, tokenType);
+            categoryMap = getCategoryMap();
         }
 
         return categoryMap.entrySet()
