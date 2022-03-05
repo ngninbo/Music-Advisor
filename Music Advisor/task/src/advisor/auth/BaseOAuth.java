@@ -21,7 +21,7 @@ public class BaseOAuth {
         return new BaseOAuth(host);
     }
 
-    public void authorizeAccess() {
+    public BaseOAuth authorizeAccess() {
         Server server = Server.getServerInstance();
         String uri = host + AUTHORIZE_ENDPOINT;
         String authorizationLink = String.format(AUTHORIZATION_LINK,
@@ -44,6 +44,7 @@ public class BaseOAuth {
         requestAccessToken();
         System.out.println(SUCCESS_MSG);
         server.stop();
+        return this;
     }
 
     private void requestAccessToken() {
@@ -56,24 +57,16 @@ public class BaseOAuth {
     }
 
     private void extractToken(String response) {
-        setAccessToken(HttpResponseParser.extractAccessToken(response));
-        setTokenType(HttpResponseParser.extractTokenType(response));
+        this.accessToken = HttpResponseParser.extractAccessToken(response);
+        this.tokenType = HttpResponseParser.extractTokenType(response);
     }
 
     public String getAccessToken() {
         return accessToken;
     }
 
-    private void setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
-    }
-
     public String getTokenType() {
         return tokenType;
-    }
-
-    private void setTokenType(String tokenType) {
-        this.tokenType = tokenType;
     }
 
     public boolean isCodeReceived() {

@@ -7,6 +7,7 @@ import advisor.services.MusicServiceBuilder;
 import advisor.view.Viewer;
 import advisor.view.ViewerContext;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,7 +16,8 @@ import static advisor.util.GlobalVariables.*;
 
 public class AdvisorControllerImpl implements AdvisorController {
 
-    private final BaseOAuth oAuth;
+    private BaseOAuth oAuth;
+    private final String host;
     private MusicService musicService;
     private final String resourceUrl;
     private boolean accessGranted;
@@ -30,7 +32,7 @@ public class AdvisorControllerImpl implements AdvisorController {
     }
 
     public AdvisorControllerImpl(String[] args) {
-        oAuth = BaseOAuth.init(args[1] != null ? args[1] : ACCOUNTS_SPOTIFY_URL);
+        host = args[1] != null ? args[1] : ACCOUNTS_SPOTIFY_URL;
         int page = args[5] != null ? Integer.parseInt(args[5]) : 5;
         resourceUrl = args[3];
         this.page = page;
@@ -74,7 +76,7 @@ public class AdvisorControllerImpl implements AdvisorController {
     @Override
     public void auth() {
         if (!accessGranted) {
-            oAuth.authorizeAccess();
+            oAuth = BaseOAuth.init(host).authorizeAccess();
             accessGranted = oAuth.isCodeReceived();
             musicService = MusicServiceBuilder.init()
                     .withClient()
