@@ -8,8 +8,6 @@ import advisor.view.Viewer;
 import advisor.view.ViewerContext;
 import java.util.List;
 import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static advisor.util.GlobalVariables.*;
 
@@ -38,9 +36,8 @@ public class AdvisorControllerImpl implements AdvisorController {
 
     @Override
     public void processCommand(String command) {
-        Pattern pattern = Pattern.compile(PLAYLISTS);
-        Matcher matcher = pattern.matcher(command);
-        if (matcher.find()) {
+
+        if (command.startsWith(PLAYLISTS)) {
             String category = command.substring(PLAYLISTS.length()).trim();
             viewPlaylistByCategory(category);
         } else {
