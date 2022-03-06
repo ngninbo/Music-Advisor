@@ -14,5 +14,4 @@ public interface AdvisorController {
     void viewFeaturePlaylist();
     void viewCategories();
     void viewPlaylistByCategory(String category);
-    void start();
 }

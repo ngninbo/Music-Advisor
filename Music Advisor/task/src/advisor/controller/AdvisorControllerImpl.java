@@ -132,14 +132,4 @@ public class AdvisorControllerImpl implements AdvisorController {
         }
 
     }
-
-    @Override
-    public void start() {
-        boolean exit = false;
-        while (!exit) {
-            Scanner scanner = new Scanner(System.in);
-            String command = scanner.nextLine();
-            exit = processCommand(command);
-        }
-    }
 }
