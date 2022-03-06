@@ -6,7 +6,9 @@ import advisor.services.MusicService;
 import advisor.services.MusicServiceBuilder;
 import advisor.view.Viewer;
 import advisor.view.ViewerContext;
+
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import static advisor.util.GlobalVariables.*;
@@ -35,14 +37,28 @@ public class AdvisorControllerImpl implements AdvisorController {
     }
 
     @Override
-    public void processCommand(String command) {
+    public boolean processCommand(String command) {
 
-        if (command.startsWith(PLAYLISTS)) {
-            String category = command.substring(PLAYLISTS.length()).trim();
-            viewPlaylistByCategory(category);
-        } else {
-            showViewByName(command);
+        switch (command) {
+            case "exit":
+                System.out.println(GOODBYE);
+                return true; // TODO: Remove/comment this line before code check
+            case "auth":
+                auth();
+                break;
+            default:
+                if (accessGranted) {
+                    if (command.startsWith(PLAYLISTS)) {
+                        String category = command.substring(PLAYLISTS.length()).trim();
+                        viewPlaylistByCategory(category);
+                    } else {
+                        showViewByName(command);
+                    }
+                } else {
+                    System.out.println(PROVIDE_ACCESS_FOR_APPLICATION);
+                }
         }
+        return false;
     }
 
     @Override
@@ -123,16 +139,7 @@ public class AdvisorControllerImpl implements AdvisorController {
         while (!exit) {
             Scanner scanner = new Scanner(System.in);
             String command = scanner.nextLine();
-            if ("exit".equals(command)) {
-                System.out.println(GOODBYE);
-                exit = true; // TODO: Remove/comment this line before code check
-            } else if ("auth".equals(command)){
-                auth();
-            } else if (accessGranted) {
-                this.processCommand(command);
-            } else {
-                System.out.println(PROVIDE_ACCESS_FOR_APPLICATION);
-            }
+            exit = processCommand(command);
         }
     }
 }
