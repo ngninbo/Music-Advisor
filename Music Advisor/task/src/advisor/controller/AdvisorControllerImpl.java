@@ -8,8 +8,6 @@ import advisor.view.Viewer;
 import advisor.view.ViewerContext;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
 
 import static advisor.util.GlobalVariables.*;
 
