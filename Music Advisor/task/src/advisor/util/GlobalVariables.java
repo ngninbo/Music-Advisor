@@ -42,4 +42,9 @@ public class GlobalVariables {
     public static final String UNKNOWN_COMMAND = "Unknown command";
     public static final String ACCESS_ALREADY_PROVIDED = "Access already provided!";
     public static final String PLAYLISTS = "playlists";
+    public static final String NEXT_COMMAND = "next";
+    public static final String PREV_COMMAND = "prev";
+    public static final String CATEGORIES_COMMAND = "categories";
+    public static final String FEATURED_COMMAND = "featured";
+    public static final String NEW_COMMAND = "new";
 }

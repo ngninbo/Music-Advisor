@@ -62,23 +62,33 @@ public class AdvisorControllerImpl implements AdvisorController {
     @Override
     public void showViewByName(String viewName) {
         switch (viewName) {
-            case "new":
+            case NEW_COMMAND:
                 viewNewAlbums();
                 break;
-            case "featured":
+            case FEATURED_COMMAND:
                 viewFeaturePlaylist();
                 break;
-            case "categories":
+            case CATEGORIES_COMMAND:
                 viewCategories();
                 break;
-            case "next":
-                viewer.nextPage();
-                break;
-            case "prev":
-                viewer.prevPage();
+            case NEXT_COMMAND:
+            case PREV_COMMAND:
+                viewPage(viewName);
                 break;
             default:
                 System.out.println(UNKNOWN_COMMAND);
+        }
+    }
+
+    private void viewPage(String command) {
+        if (viewer.getStrategy() != null) {
+            if (command.equals(NEXT_COMMAND)) {
+                viewer.nextPage();
+            } else {
+                viewer.prevPage();
+            }
+        } else {
+            System.out.println("Please choose a list first!");
         }
     }
 

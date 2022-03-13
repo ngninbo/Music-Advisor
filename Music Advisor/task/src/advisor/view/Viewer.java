@@ -4,6 +4,10 @@ public class Viewer {
 
     private ItemViewStrategy strategy;
 
+    public ItemViewStrategy getStrategy() {
+        return strategy;
+    }
+
     public Viewer setStrategy(ItemViewStrategy strategy) {
         this.strategy = strategy;
         return this;
