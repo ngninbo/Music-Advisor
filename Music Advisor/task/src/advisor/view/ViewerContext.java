@@ -20,10 +20,7 @@ public class ViewerContext implements ItemViewStrategy {
     private boolean isLastPage;
 
     {
-        this.actualPage = 0;
-        this.start = 0;
         this.isFirstPage = true;
-        this.isLastPage = false;
     }
 
     public ViewerContext(List<Item<String>> items, int page) {
