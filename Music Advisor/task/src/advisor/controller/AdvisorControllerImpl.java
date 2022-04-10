@@ -4,10 +4,12 @@ import advisor.auth.BaseOAuth;
 import advisor.models.Item;
 import advisor.services.MusicService;
 import advisor.services.MusicServiceBuilder;
+import advisor.util.ArgumentMapper;
 import advisor.view.Viewer;
 import advisor.view.ViewerContext;
 
 import java.util.List;
+import java.util.Map;
 
 import static advisor.util.GlobalVariables.*;
 
@@ -21,17 +23,15 @@ public class AdvisorControllerImpl implements AdvisorController {
 
     private final Viewer viewer;
 
-    private List<Item<String>> items;
-
     {
         viewer = new Viewer();
     }
 
     public AdvisorControllerImpl(String[] args) {
-        host = args[1] != null ? args[1] : ACCOUNTS_SPOTIFY_URL;
-        int page = args[5] != null ? Integer.parseInt(args[5]) : 5;
-        resourceUrl = args[3];
-        this.page = page;
+        Map<String, String> argMap = ArgumentMapper.convertToMap(args);
+        host = argMap.getOrDefault("access", ACCOUNTS_SPOTIFY_URL);
+        resourceUrl = argMap.get("resource");
+        this.page = argMap.containsKey("page") ? Integer.parseInt(argMap.get("page")) : 5;
     }
 
     @Override
@@ -45,18 +45,22 @@ public class AdvisorControllerImpl implements AdvisorController {
                 auth();
                 break;
             default:
-                if (accessGranted) {
-                    if (command.startsWith(PLAYLISTS)) {
-                        String category = command.substring(PLAYLISTS.length()).trim();
-                        viewPlaylistByCategory(category);
-                    } else {
-                        showViewByName(command);
-                    }
-                } else {
-                    System.out.println(PROVIDE_ACCESS_FOR_APPLICATION);
-                }
+                execute(command);
         }
         return false;
+    }
+
+    private void execute(String command) {
+        if (accessGranted) {
+            if (command.startsWith(PLAYLISTS)) {
+                String category = command.substring(PLAYLISTS.length()).trim();
+                viewPlaylistByCategory(category);
+            } else {
+                showViewByName(command);
+            }
+        } else {
+            System.out.println(PROVIDE_ACCESS_FOR_APPLICATION);
+        }
     }
 
     @Override
@@ -80,17 +84,6 @@ public class AdvisorControllerImpl implements AdvisorController {
         }
     }
 
-    private void viewPage(String command) {
-        if (viewer.getStrategy() != null) {
-            if (command.equals(NEXT_COMMAND)) {
-                viewer.nextPage();
-            } else {
-                viewer.prevPage();
-            }
-        } else {
-            System.out.println("Please choose a list first!");
-        }
-    }
 
     @Override
     public void auth() {
@@ -110,28 +103,25 @@ public class AdvisorControllerImpl implements AdvisorController {
 
     @Override
     public void viewNewAlbums() {
-        items = musicService.getNewReleases();
-
-        viewer.setStrategy(new ViewerContext(items, page)).nextPage();
+        viewer.setStrategy(new ViewerContext(musicService.getNewReleases(), page))
+                .nextPage();
     }
 
     @Override
     public void viewFeaturePlaylist() {
-        items = musicService.getFeaturedPlaylist();
-
-        viewer.setStrategy(new ViewerContext(items, page)).nextPage();
+        viewer.setStrategy(new ViewerContext(musicService.getFeaturedPlaylist(), page))
+                .nextPage();
     }
 
     @Override
     public void viewCategories() {
-        items = musicService.getCategories();
-
-        viewer.setStrategy(new ViewerContext(items, page)).nextPage();
+        viewer.setStrategy(new ViewerContext(musicService.getCategories(), page))
+                .nextPage();
     }
 
     @Override
     public void viewPlaylistByCategory(String category) {
-        items = musicService.getPlaylistByCategory(category);
+        List<Item<String>> items = musicService.getPlaylistByCategory(category);
 
         if (items.size() > 0) {
             viewer.setStrategy(new ViewerContext(items, page)).nextPage();
@@ -139,5 +129,17 @@ public class AdvisorControllerImpl implements AdvisorController {
             System.out.println(UNKNOWN_CATEGORY_NAME);
         }
 
+    }
+
+    private void viewPage(String command) {
+        if (viewer.getStrategy() != null) {
+            if (command.equals(NEXT_COMMAND)) {
+                viewer.nextPage();
+            } else {
+                viewer.prevPage();
+            }
+        } else {
+            System.out.println("Please choose a list first!");
+        }
     }
 }
