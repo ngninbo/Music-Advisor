@@ -47,4 +47,5 @@ public class GlobalVariables {
     public static final String CATEGORIES_COMMAND = "categories";
     public static final String FEATURED_COMMAND = "featured";
     public static final String NEW_COMMAND = "new";
+    public static final int DEFAULT_PAGE = 5;
 }

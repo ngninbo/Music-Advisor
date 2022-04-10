@@ -31,7 +31,7 @@ public class AdvisorControllerImpl implements AdvisorController {
         Map<String, String> argMap = ArgumentMapper.convertToMap(args);
         host = argMap.getOrDefault("access", ACCOUNTS_SPOTIFY_URL);
         resourceUrl = argMap.get("resource");
-        this.page = argMap.containsKey("page") ? Integer.parseInt(argMap.get("page")) : 5;
+        this.page = argMap.containsKey("page") ? Integer.parseInt(argMap.get("page")) : DEFAULT_PAGE;
     }
 
     @Override
