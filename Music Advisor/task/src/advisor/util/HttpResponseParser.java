@@ -5,29 +5,31 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static advisor.util.GlobalVariables.PLAYLISTS;
 
 public class HttpResponseParser {
 
     private static List<Item<String>> results;
+
     /**
      * Extract all playlists from http responses body
+     *
      * @param response Body of http response
      * @return List of Items
      */
     public static List<Item<String>> extractPlaylists(String response) {
 
         results = new ArrayList<>();
-        JsonArray playlists = parseHttpResponseAndGetItems(response, PLAYLISTS);
+        JsonArray playlists = parseHttpResponseAndGetItems(response, "playlists");
         for (int i = 0; i < playlists.size(); i++) {
             JsonObject playlist = playlists.get(i).getAsJsonObject();
             String name = playlist.get("name").getAsString();
             String url = getExternalUrl(playlist);
-            results.add(new Item<>(name + "\n" + url + "\n"));
+            results.add(new Item<>(String.format("%s\n%s\n", name, url)));
         }
 
         return results;
@@ -35,6 +37,7 @@ public class HttpResponseParser {
 
     /**
      * Parse given http response body for extracting new albums
+     *
      * @param responseBody Http response body
      * @return List of new releases
      */
@@ -57,9 +60,8 @@ public class HttpResponseParser {
             }
 
             String externalUrl = getExternalUrl(album);
-
-            Item<String> newRelease = new Item<>(title + "\n" + artistNames + "\n"
-                    + externalUrl + "\n");
+            Item<String> newRelease = new Item<>(String.format("%s\n%s\n%s\n",
+                    title, artistNames, externalUrl));
             results.add(newRelease);
         }
         return results;
