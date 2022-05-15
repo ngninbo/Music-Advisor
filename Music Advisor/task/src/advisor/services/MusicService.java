@@ -3,13 +3,10 @@ package advisor.services;
 import advisor.client.Client;
 import advisor.models.Item;
 import advisor.util.HttpResponseParser;
+import advisor.util.PropertiesLoader;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import static advisor.util.GlobalVariables.*;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Service class implementing methods for getting list of categories, new albums, playlists for the users spotify account
@@ -24,7 +21,17 @@ public class MusicService implements RemoteMusicService {
     private final String resourceUrl;
     private final String accessToken;
     private final String tokenType;
-    private Map<String, Item<String>> categoryMap;
+    private Map<String, Item<String>> categoryMap = Map.of();
+
+    private Properties properties;
+
+    {
+        try {
+            properties = PropertiesLoader.loadProperties("application.properties");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public MusicService(Client client, String resourceUrl, String accessToken, String tokenType) {
         this.client = client;
@@ -41,7 +48,11 @@ public class MusicService implements RemoteMusicService {
 
     public Map<String, Item<String>> getCategoryMap() {
 
-        responseBody = client.createHttpRequest(accessToken, tokenType, resourceUrl + CATEGORIES_ENDPOINT)
+        responseBody = client
+                .createHttpRequest(
+                        accessToken,
+                        tokenType,
+                        getUrl("CATEGORIES_ENDPOINT"))
                 .sendHttpRequest();
 
         return HttpResponseParser.extractCategoryMap(responseBody);
@@ -50,15 +61,16 @@ public class MusicService implements RemoteMusicService {
     @Override
     public List<Item<String>> getNewReleases() {
 
-        responseBody = client.createHttpRequest(accessToken, tokenType, resourceUrl + RELEASE_ENDPOINT).sendHttpRequest();
+        responseBody = client.createHttpRequest(accessToken, tokenType, getUrl("RELEASE_ENDPOINT")).sendHttpRequest();
 
         return HttpResponseParser.extractReleases(responseBody);
     }
 
+
     @Override
     public List<Item<String>> getFeaturedPlaylist() {
 
-        responseBody = client.createHttpRequest(accessToken, tokenType, resourceUrl + FEATURED_PLAYLIST_ENDPOINT)
+        responseBody = client.createHttpRequest(accessToken, tokenType, getUrl("FEATURED_PLAYLIST_ENDPOINT"))
                 .sendHttpRequest();
 
         return HttpResponseParser.extractPlaylists(responseBody);
@@ -68,9 +80,9 @@ public class MusicService implements RemoteMusicService {
     public List<Item<String>> getPlaylistByCategory(String category) {
         Optional<String> id = getCategoryId(category);
         if (id.isPresent()) {
-            responseBody = client.createHttpRequest(accessToken, 
-                    tokenType, 
-                    String.format("%s/%s/%s", resourceUrl + CATEGORIES_ENDPOINT, id.get(), PLAYLISTS)
+            responseBody = client.createHttpRequest(accessToken,
+                    tokenType,
+                    String.format("%s/%s/playlists", getUrl("CATEGORIES_ENDPOINT"), id.get())
                     ).sendHttpRequest();
             if (HttpResponseParser.httpResponseBodyContainsError(responseBody)) {
                 System.out.println(HttpResponseParser.getErrorMessage(responseBody));
@@ -78,7 +90,7 @@ public class MusicService implements RemoteMusicService {
                 return HttpResponseParser.extractPlaylists(responseBody);
             }
         }
-        
+
         return List.of();
     }
 
@@ -89,7 +101,7 @@ public class MusicService implements RemoteMusicService {
      * @return Optional Category id
      */
     private Optional<String> getCategoryId(String category) {
-        if (categoryMap == null) {
+        if (categoryMap.isEmpty()) {
             categoryMap = getCategoryMap();
         }
 
@@ -98,5 +110,9 @@ public class MusicService implements RemoteMusicService {
                 .filter(el -> category.equalsIgnoreCase(el.getValue().getT()))
                 .findFirst()
                 .map(Map.Entry::getKey);
+    }
+
+    private String getUrl(String endpointKey) {
+        return resourceUrl + properties.getProperty(endpointKey);
     }
 }

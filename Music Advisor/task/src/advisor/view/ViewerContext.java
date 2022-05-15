@@ -1,12 +1,12 @@
 package advisor.view;
 
 import advisor.models.Item;
+import advisor.util.PropertiesLoader;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.IntStream;
-
-import static advisor.util.GlobalVariables.CURRENT_PAGE_REPORT;
-import static advisor.util.GlobalVariables.NO_MORE_PAGES;
 
 public class ViewerContext implements ItemViewStrategy {
 
@@ -19,8 +19,15 @@ public class ViewerContext implements ItemViewStrategy {
     private boolean isFirstPage;
     private boolean isLastPage;
 
+    private Properties properties;
+
     {
         this.isFirstPage = true;
+        try {
+            properties = PropertiesLoader.loadProperties("application.properties");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public ViewerContext(List<Item<String>> items, int page) {
@@ -42,9 +49,10 @@ public class ViewerContext implements ItemViewStrategy {
             isLastPage = actualPage == totalPages;
             printItemsWithPageReport();
         } else {
-            System.out.println(NO_MORE_PAGES);
+            logNorMorePages();
         }
     }
+
 
     @Override
     public void next() {
@@ -56,7 +64,7 @@ public class ViewerContext implements ItemViewStrategy {
             actualPage += 1;
             printItemsWithPageReport();
         } else {
-            System.out.println(NO_MORE_PAGES);
+            logNorMorePages();
         }
 
         isFirstPage = actualPage == 0;
@@ -69,6 +77,10 @@ public class ViewerContext implements ItemViewStrategy {
                 .mapToObj(i -> items.get(i).getT())
                 .forEach(System.out::println);
 
-        System.out.printf(CURRENT_PAGE_REPORT, actualPage, totalPages);
+        System.out.printf(properties.getProperty("CURRENT_PAGE_REPORT") + "\n", actualPage, totalPages);
+    }
+
+    private void logNorMorePages() {
+        System.out.println(properties.getProperty("NO_MORE_PAGES"));
     }
 }

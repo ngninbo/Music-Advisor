@@ -5,13 +5,14 @@ import advisor.models.Item;
 import advisor.services.MusicService;
 import advisor.services.MusicServiceBuilder;
 import advisor.util.ArgumentMapper;
+import advisor.util.PropertiesLoader;
 import advisor.view.Viewer;
 import advisor.view.ViewerContext;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-
-import static advisor.util.GlobalVariables.*;
+import java.util.Properties;
 
 public class AdvisorControllerImpl implements AdvisorController {
 
@@ -20,18 +21,31 @@ public class AdvisorControllerImpl implements AdvisorController {
     private final String resourceUrl;
     private boolean accessGranted;
     private final int page;
-
     private final Viewer viewer;
+    private Properties properties;
+
+    public static final String NEXT_COMMAND = "next";
+    public static final String PREV_COMMAND = "prev";
+    public static final String CATEGORIES_COMMAND = "categories";
+    public static final String FEATURED_COMMAND = "featured";
+    public static final String NEW_COMMAND = "new";
 
     {
         viewer = new Viewer();
+        try {
+            properties = PropertiesLoader.loadProperties("application.properties");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public AdvisorControllerImpl(String[] args) {
         Map<String, String> argMap = ArgumentMapper.convertToMap(args);
-        host = argMap.getOrDefault("access", ACCOUNTS_SPOTIFY_URL);
+        host = argMap.getOrDefault("access", properties.getProperty("ACCOUNTS_SPOTIFY_URL"));
         resourceUrl = argMap.get("resource");
-        this.page = argMap.containsKey("page") ? Integer.parseInt(argMap.get("page")) : DEFAULT_PAGE;
+        this.page = argMap.containsKey("page") ?
+                Integer.parseInt(argMap.get("page")) :
+                Integer.parseInt(properties.getProperty("DEFAULT_PAGE"));
     }
 
     @Override
@@ -39,7 +53,7 @@ public class AdvisorControllerImpl implements AdvisorController {
 
         switch (command) {
             case "exit":
-                System.out.println(GOODBYE);
+                log("GOODBYE");
                 return true; // TODO: Remove/comment this line before code check
             case "auth":
                 auth();
@@ -52,15 +66,20 @@ public class AdvisorControllerImpl implements AdvisorController {
 
     private void execute(String command) {
         if (accessGranted) {
-            if (command.startsWith(PLAYLISTS)) {
-                String category = command.substring(PLAYLISTS.length()).trim();
+            String playlists = properties.getProperty("PLAYLISTS");
+            if (command.startsWith(playlists)) {
+                String category = command.substring(playlists.length()).trim();
                 viewPlaylistByCategory(category);
             } else {
                 showViewByName(command);
             }
         } else {
-            System.out.println(PROVIDE_ACCESS_FOR_APPLICATION);
+            log("PROVIDE_ACCESS_FOR_APPLICATION");
         }
+    }
+
+    private void log(String propertyKey) {
+        System.out.println(properties.getProperty(propertyKey));
     }
 
     @Override
@@ -80,7 +99,7 @@ public class AdvisorControllerImpl implements AdvisorController {
                 viewPage(viewName);
                 break;
             default:
-                System.out.println(UNKNOWN_COMMAND);
+                log("UNKNOWN_COMMAND");
         }
     }
 
@@ -88,7 +107,7 @@ public class AdvisorControllerImpl implements AdvisorController {
     @Override
     public void auth() {
         if (!accessGranted) {
-            BaseOAuth oAuth = BaseOAuth.init(host).authorizeAccess();
+            BaseOAuth oAuth = BaseOAuth.init(host).provideAccess();
             accessGranted = oAuth.isCodeReceived();
             musicService = MusicServiceBuilder.init()
                     .withClient()
@@ -97,7 +116,7 @@ public class AdvisorControllerImpl implements AdvisorController {
                     .withTokenType(oAuth.getTokenType())
                     .build();
         } else {
-            System.out.println(ACCESS_ALREADY_PROVIDED);
+            log("ACCESS_ALREADY_PROVIDED");
         }
     }
 
@@ -126,7 +145,7 @@ public class AdvisorControllerImpl implements AdvisorController {
         if (items.size() > 0) {
             viewer.setStrategy(new ViewerContext(items, page)).nextPage();
         } else {
-            System.out.println(UNKNOWN_CATEGORY_NAME);
+            log("UNKNOWN_CATEGORY_NAME");
         }
 
     }

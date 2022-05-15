@@ -3,8 +3,10 @@ package advisor.auth;
 import advisor.client.Client;
 import advisor.util.HttpResponseParser;
 import advisor.server.Server;
+import advisor.util.PropertiesLoader;
 
-import static advisor.util.GlobalVariables.*;
+import java.io.IOException;
+import java.util.Properties;
 
 public class BaseOAuth {
 
@@ -12,6 +14,16 @@ public class BaseOAuth {
     private String accessCode;
     private String accessToken;
     private String tokenType;
+
+    private Properties properties;
+
+    {
+        try {
+            properties = PropertiesLoader.loadProperties("application.properties");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     protected BaseOAuth(String host) {
         this.host = host;
@@ -21,17 +33,21 @@ public class BaseOAuth {
         return new BaseOAuth(host);
     }
 
-    public BaseOAuth authorizeAccess() {
+    public BaseOAuth provideAccess() {
         Server server = Server.getServerInstance();
-        String uri = host + AUTHORIZE_ENDPOINT;
-        String authorizationLink = String.format(AUTHORIZATION_LINK,
-                uri, CLIENT_ID, REDIRECT_URL, RESPONSE_TYPE);
+        String uri = host + properties.getProperty("AUTHORIZE_ENDPOINT");
+        String authorizationLink = String.format(
+                properties.getProperty("AUTHORIZATION_LINK"),
+                uri,
+                properties.getProperty("CLIENT_ID"),
+                properties.getProperty("REDIRECT_URL"),
+                properties.getProperty("RESPONSE_TYPE"));
 
         server.start();
         server.createContext();
-        System.out.println(USER_REDIRECT_LINK_MSG);
+        log("USER_REDIRECT_LINK_MSG");
         System.out.println(authorizationLink);
-        System.out.println(WAITING_FOR_CODE_MSG);
+        log("WAITING_FOR_CODE_MSG");
 
         accessCode = server.getCode();
 
@@ -39,19 +55,29 @@ public class BaseOAuth {
             accessCode = server.getCode();
         }
 
-        System.out.println(CODE_RECEIVED_MSG);
-        System.out.println(MAKING_HTTP_REQUEST_FOR_ACCESS_TOKEN);
+        log("CODE_RECEIVED_MSG");
+        log("MAKING_HTTP_REQUEST_FOR_ACCESS_TOKEN");
         requestAccessToken();
-        System.out.println(SUCCESS_MSG);
+        log("SUCCESS_MSG");
         server.stop();
         return this;
     }
 
-    private void requestAccessToken() {
-        String requestData = String.format(REQUEST_PATH_PARAMETERS,
-                GRANT_TYPE, accessCode, REDIRECT_URL, CLIENT_ID, CLIENT_SECRET);
+    private void log(String propertyKey) {
+        System.out.println(properties.getProperty(propertyKey));
+    }
 
-        String response = Client.getClientInstance().createHttpPostRequest(host + TOKEN_ENDPOINT, requestData)
+    private void requestAccessToken() {
+        String requestData = String.format(
+                properties.getProperty("REQUEST_PATH_PARAMETERS"),
+                properties.getProperty("GRANT_TYPE"),
+                accessCode,
+                properties.getProperty("REDIRECT_URL"),
+                properties.getProperty("CLIENT_ID"),
+                properties.getProperty("CLIENT_SECRET"));
+
+        String response = Client.getClientInstance()
+                .createHttpPostRequest(host + properties.getProperty("TOKEN_ENDPOINT"), requestData)
                 .sendHttpRequest();
         extractToken(response);
     }

@@ -1,10 +1,10 @@
 package advisor.server;
 
+import advisor.util.PropertiesLoader;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-
-import static advisor.util.GlobalVariables.*;
+import java.util.Properties;
 
 
 /**
@@ -17,6 +17,16 @@ public class Server {
 
     private String code;
     private HttpServer server;
+
+    private Properties properties;
+
+    {
+        try {
+            properties = PropertiesLoader.loadProperties("application.properties");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private Server() {
     }
@@ -33,7 +43,9 @@ public class Server {
     public void start() {
         try {
             this.server = HttpServer.create();
-            this.server.bind(new InetSocketAddress(PORT), IP);
+            this.server.bind(new InetSocketAddress(
+                    Integer.parseInt(properties.getProperty("PORT"))),
+                    Integer.parseInt(properties.getProperty("IP")));
             server.start();
         } catch (IOException e) {
             e.printStackTrace();
@@ -42,10 +54,10 @@ public class Server {
 
     public void createContext() {
         this.server.createContext("/", (exchange) -> {
-            String msg = AUTHORIZATION_CODE_NOT_FOUND_TRY_AGAIN_TEXT;
+            String msg = properties.getProperty("AUTHORIZATION_CODE_NOT_FOUND_TRY_AGAIN_TEXT");
             String query = exchange.getRequestURI().getQuery();
             if (query != null && query.matches("^code=.+")) {
-                msg = GOT_THE_CODE_RETURN_BACK_TEXT;
+                msg = properties.getProperty("GOT_THE_CODE_RETURN_BACK_TEXT");
                 this.code = query.replaceFirst("^code=", "");
             }
             exchange.sendResponseHeaders(200, msg.length());
@@ -55,7 +67,7 @@ public class Server {
     }
 
     public void stop() {
-        this.server.stop(MAX_DELAY);
+        this.server.stop(Integer.parseInt(properties.getProperty("MAX_DELAY")));
     }
 
     public String getCode() {
