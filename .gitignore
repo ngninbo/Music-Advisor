@@ -1,0 +1,82 @@
+# Project exclude paths
+/.gradle/
+/Music Advisor/task/build/
+/Music Advisor/task/out/
+/Music Advisor/task/out/production/classes/
+/Topics/Anonymous classes/Capture variables/out/
+/Topics/Anonymous classes/Capture variables/out/production/classes/
+/Topics/Anonymous classes/String reverser/out/
+/Topics/Anonymous classes/String reverser/out/production/classes/
+/Topics/Boxing and unboxing/Safe converting/out/
+/Topics/Boxing and unboxing/Safe converting/out/production/classes/
+/Topics/Comparable/Implement comparing by additional fields/out/
+/Topics/Comparable/Implement comparing by additional fields/out/production/classes/
+/Topics/Decorator/Breakfast Decorator/out/
+/Topics/Decorator/Breakfast Decorator/out/production/classes/
+/Topics/Decorator/Coffee Decorator/out/
+/Topics/Decorator/Coffee Decorator/out/production/classes/
+/Topics/Decorator/Pizza Decorator/out/
+/Topics/Decorator/Pizza Decorator/out/production/classes/
+/Topics/Default methods/Implement a default method/out/
+/Topics/Default methods/Implement a default method/out/production/classes/
+/Topics/Exception handling/Catching some exceptions/out/
+/Topics/Exception handling/Catching some exceptions/out/production/classes/
+/Topics/Integer types and operations/Difference of times/out/
+/Topics/Integer types and operations/Difference of times/out/production/classes/
+/Topics/NPE/Avoid NPE/out/
+/Topics/NPE/Avoid NPE/out/production/classes/
+/Topics/NPE/Avoid NPE with strings/out/
+/Topics/NPE/Avoid NPE with strings/out/production/classes/
+/Topics/NPE/Return empty string when argument is null/out/
+/Topics/NPE/Return empty string when argument is null/out/production/classes/
+/Topics/Polymorphism/Find mistake/out/
+/Topics/Polymorphism/Find mistake/out/production/classes/
+/Topics/Processing strings/Compression algorithm/out/
+/Topics/Processing strings/Compression algorithm/out/production/classes/
+/Topics/Processing strings/Convert a date/out/
+/Topics/Processing strings/Convert a date/out/production/classes/
+/Topics/Processing strings/Create an euphonious word/out/
+/Topics/Processing strings/Create an euphonious word/out/production/classes/
+/Topics/Processing strings/Cutting out the middle of a string/out/
+/Topics/Processing strings/Cutting out the middle of a string/out/production/classes/
+/Topics/Processing strings/Double characters/out/
+/Topics/Processing strings/Double characters/out/production/classes/
+/Topics/Processing strings/Find the first occurrence of the word "the"/out/
+/Topics/Processing strings/Find the first occurrence of the word "the"/out/production/classes/
+/Topics/Processing strings/Generating passwords/out/
+/Topics/Processing strings/Generating passwords/out/production/classes/
+/Topics/Processing strings/Move the first N characters/out/
+/Topics/Processing strings/Move the first N characters/out/production/classes/
+/Topics/Processing strings/Number of occurrences/out/
+/Topics/Processing strings/Number of occurrences/out/production/classes/
+/Topics/Processing strings/Palindrome/out/
+/Topics/Processing strings/Palindrome/out/production/classes/
+/Topics/Processing strings/Parse url/out/
+/Topics/Processing strings/Parse url/out/production/classes/
+/Topics/Processing strings/Piece of alphabet/out/
+/Topics/Processing strings/Piece of alphabet/out/production/classes/
+/Topics/Processing strings/The longest word/out/
+/Topics/Processing strings/The longest word/out/production/classes/
+/Topics/Processing strings/The lucky ticket/out/
+/Topics/Processing strings/The lucky ticket/out/production/classes/
+/Topics/Processing strings/The percentage of G and C characters/out/
+/Topics/Processing strings/The percentage of G and C characters/out/production/classes/
+/Topics/Relational operators/Check the sum/out/
+/Topics/Relational operators/Check the sum/out/production/classes/
+/Topics/Static members/Project constants and methods/out/
+/Topics/Static members/Project constants and methods/out/production/classes/
+/Topics/Static members/Time constants/out/
+/Topics/Static members/Time constants/out/production/classes/
+/Topics/Strategy/Max and Min/out/
+/Topics/Strategy/Max and Min/out/production/classes/
+/Topics/Strategy/Pick your team/out/
+/Topics/Strategy/Pick your team/out/production/classes/
+/Topics/StringBuilder/Concat all strings without digits/out/
+/Topics/StringBuilder/Concat all strings without digits/out/production/classes/
+/Topics/StringBuilder/The English alphabet/out/
+/Topics/StringBuilder/The English alphabet/out/production/classes/
+/Topics/The keyword super/Fix the non-compiled hierarchy/out/
+/Topics/The keyword super/Fix the non-compiled hierarchy/out/production/classes/
+# Project exclude paths
+/Topics/Integer types and operations/Snail/out/
+/Topics/Integer types and operations/Snail/out/production/classes/

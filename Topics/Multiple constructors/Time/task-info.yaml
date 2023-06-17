@@ -1,0 +1,18 @@
+type: code
+files:
+- name: src/Main.java
+  visible: true
+  text: |-
+    class Time {
+
+        int hours;
+        int minutes;
+        int seconds;
+    }
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/3005#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Thu, 21 Oct 2021 08:48:08 UTC
+record: -1

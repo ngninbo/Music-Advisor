@@ -1,0 +1,37 @@
+type: code
+files:
+- name: src/Main.java
+  visible: true
+  text: |-
+    class Main {
+        public static void main(String... args) {
+            // correct the next line
+            Printer<Integer> printer = new Printer();
+
+            // do not change the code below
+            printer.set("value");
+            printer.print();
+        }
+    }
+
+    class Printer<T> {
+        private T value;
+
+        void set(T value) {
+            this.value = value;
+        }
+
+        void print() {
+            System.out.println("Passed value: " + value);
+        }
+    }
+  learner_created: false
+- name: src/HTTPInteractionExample.java
+  visible: true
+  learner_created: true
+feedback_link: https://hyperskill.org/learn/step/11177#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Mon, 25 Oct 2021 08:51:37 UTC
+record: -1

@@ -1,0 +1,1604 @@
+type: edu
+custom_name: stage5
+files:
+- name: src/advisor/Main.java
+  visible: true
+  text: |
+    package advisor;
+
+    public class Main {
+        public static void main(String[] args) {
+            System.out.println("Hello World!");
+        }
+    }
+  learner_created: false
+- name: build.gradle
+  visible: true
+  text: |-
+    apply plugin: 'java'
+    apply plugin: 'application'
+
+    group 'advisor'
+    version '1.0-SNAPSHOT'
+
+    sourceCompatibility = 11
+    mainClassName = 'advisor.Main'
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        implementation 'com.google.code.gson:gson:+'
+    }
+
+    jar {
+        manifest {
+            attributes 'Main-Class' : 'advisor.Main'
+        }
+        from {
+            configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+        }
+    }
+  learner_created: false
+- name: test/MockTokenServer.java
+  visible: false
+  text: |
+    import org.hyperskill.hstest.mocks.web.WebServerMock;
+
+    public class MockTokenServer extends Thread {
+
+        WebServerMock accessServer;
+
+        public MockTokenServer (WebServerMock accessServer) {
+            this.accessServer = accessServer;
+        }
+
+        @Override
+        public void run() {
+            accessServer.start();
+            accessServer.run();
+        }
+
+        public void stopMock() {
+            interrupt();
+        }
+    }
+  learner_created: false
+- name: test/MusicAdvisorTest.java
+  visible: false
+  text: |-
+    import org.hyperskill.hstest.dynamic.DynamicTest;
+    import org.hyperskill.hstest.exception.outcomes.WrongAnswer;
+    import org.hyperskill.hstest.mocks.web.WebServerMock;
+    import org.hyperskill.hstest.stage.StageTest;
+    import org.hyperskill.hstest.testcase.CheckResult;
+    import org.hyperskill.hstest.testing.TestedProgram;
+    import org.junit.AfterClass;
+
+    @SuppressWarnings("unused")
+    public class MusicAdvisorTest extends StageTest<String> {
+
+        private static final String fictiveAuthCode = "123123";
+        private static final String fictiveAccessToken = "456456";
+        private static final String fictiveRefreshToken = "567567";
+
+
+        private static final int accessServerPort = 45678;
+        private static final int resourceServerPort = 56789;
+
+        private static final String accessServerUrl = "http://127.0.0.1:" + accessServerPort;
+        private static final String resourceServerUrl = "http://127.0.0.1:" + resourceServerPort;
+
+        private static final String[] arguments = new String[]{
+                "-access",
+                accessServerUrl,
+                "-resource",
+                resourceServerUrl,
+                "-page",
+                "1"
+        };
+
+        private static final String tokenResponse = "{" +
+                "\"access_token\":\"" + fictiveAccessToken + "\"," +
+                "\"token_type\":\"Bearer\"," +
+                "\"expires_in\":3600," +
+                "\"refresh_token\":" + "\"" + fictiveRefreshToken + "\"," +
+                "\"scope\":\"\"" +
+                "}";
+
+        // TODO handle auth code argument to get the token.
+        private static final WebServerMock accessServer = new WebServerMock(accessServerPort)
+                .setPage("/api/token", tokenResponse);
+
+
+        private static final String spotifyServerUrl = "https://api\\.spotify\\.com";
+
+        private static final String apiCategoriesResponse = """
+            {
+                "categories": {
+                    "href": "https://api.spotify.com/v1/browse/categories?offset=0&limit=20",
+                    "items": [
+                        {
+                            "href": "https://api.spotify.com/v1/browse/categories/toplists",
+                            "icons": [
+                                {
+                                    "height": 275,
+                                    "url": "https://datsnxq1rwndn.cloudfront.net/media/derived/toplists_11160599e6a04ac5d6f2757f5511778f_0_0_275_275.jpg",
+                                    "width": 275
+                                }
+                            ],
+                            "id": "toplists",
+                            "name": "Top Lists"
+                        },
+                        {
+                            "href": "https://api.spotify.com/v1/browse/categories/mood",
+                            "icons": [
+                                {
+                                    "height": 274,
+                                    "url": "https://datsnxq1rwndn.cloudfront.net/media/original/mood-274x274_976986a31ac8c49794cbdc7246fd5ad7_274x274.jpg",
+                                    "width": 274
+                                }
+                            ],
+                            "id": "mood",
+                            "name": "Super Mood"
+                        },
+                        {
+                            "href": "https://api.spotify.com/v1/browse/categories/party",
+                            "icons": [
+                                {
+                                    "height": 274,
+                                    "url": "https://datsnxq1rwndn.cloudfront.net/media/derived/party-274x274_73d1907a7371c3bb96a288390a96ee27_0_0_274_274.jpg",
+                                    "width": 274
+                                }
+                            ],
+                            "id": "party",
+                            "name": "Party Time"
+                        }
+                    ],
+                    "limit": 20,
+                    "next": null,
+                    "offset": 0,
+                    "previous": null,
+                    "total": 3
+                }
+            }""";
+
+
+        private static final String apiPlaylistsPartyResponse = """
+            {
+                "playlists": {
+                    "href": "https://api.spotify.com/v1/browse/categories/party/playlists?offset=0&limit=20",
+                    "items": [
+                        {
+                            "collaborative": false,
+                            "external_urls": {
+                                "spotify": "http://open.spotify.com/user/spotifybrazilian/playlist/4k7EZPI3uKMz4aRRrLVfen"
+                            },
+                            "href": "https://api.spotify.com/v1/users/spotifybrazilian/playlists/4k7EZPI3uKMz4aRRrLVfen",
+                            "id": "4k7EZPI3uKMz4aRRrLVfen",
+                            "images": [
+                                {
+                                    "height": 300,
+                                    "url": "https://i.scdn.co/image/bf6544c213532e9650088dfef76c8521093d970e",
+                                    "width": 300
+                                }
+                            ],
+                            "name": "Noite Eletronica",
+                            "owner": {
+                                "external_urls": {
+                                    "spotify": "http://open.spotify.com/user/spotifybrazilian"
+                                },
+                                "href": "https://api.spotify.com/v1/users/spotifybrazilian",
+                                "id": "spotifybrazilian",
+                                "type": "user",
+                                "uri": "spotify:user:spotifybrazilian"
+                            },
+                            "public": null,
+                            "snapshot_id": "PULvu1V2Ps8lzCxNXfNZTw4QbhBpaV0ZORc03Mw6oj6kQw9Ks2REwhL5Xcw/74wL",
+                            "tracks": {
+                                "href": "https://api.spotify.com/v1/users/spotifybrazilian/playlists/4k7EZPI3uKMz4aRRrLVfen/tracks",
+                                "total": 100
+                            },
+                            "type": "playlist",
+                            "uri": "spotify:user:spotifybrazilian:playlist:4k7EZPI3uKMz4aRRrLVfen"
+                        },
+                        {
+                            "collaborative": false,
+                            "external_urls": {
+                                "spotify": "http://open.spotify.com/user/spotifybrazilian/playlist/4HZh0C9y80GzHDbHZyX770"
+                            },
+                            "href": "https://api.spotify.com/v1/users/spotifybrazilian/playlists/4HZh0C9y80GzHDbHZyX770",
+                            "id": "4HZh0C9y80GzHDbHZyX770",
+                            "images": [
+                                {
+                                    "height": 300,
+                                    "url": "https://i.scdn.co/image/be6c333146674440123073cb32c1c8b851e69023",
+                                    "width": 300
+                                }
+                            ],
+                            "name": "Festa Indie",
+                            "owner": {
+                                "external_urls": {
+                                    "spotify": "http://open.spotify.com/user/spotifybrazilian"
+                                },
+                                "href": "https://api.spotify.com/v1/users/spotifybrazilian",
+                                "id": "spotifybrazilian",
+                                "type": "user",
+                                "uri": "spotify:user:spotifybrazilian"
+                            },
+                            "public": null,
+                            "snapshot_id": "V66hh9k2HnLCdzHvtoXPv+tm0jp3ODM63SZ0oISfGnlHQxwG/scupDbKgIo99Zfz",
+                            "tracks": {
+                                "href": "https://api.spotify.com/v1/users/spotifybrazilian/playlists/4HZh0C9y80GzHDbHZyX770/tracks",
+                                "total": 74
+                            },
+                            "type": "playlist",
+                            "uri": "spotify:user:spotifybrazilian:playlist:4HZh0C9y80GzHDbHZyX770"
+                        }
+                    ],
+                    "limit": 20,
+                    "next": null,
+                    "offset": 0,
+                    "previous": null,
+                    "total": 2
+                }
+            }""".replaceAll(spotifyServerUrl, resourceServerUrl);
+
+        private static final String testErrorMessage = "Test unpredictable error message";
+
+        private static final String apiTestErrorResponse = "{\"error\":{\"status\":404,\"message\":\"" + testErrorMessage + "\"}}";
+
+        private static final String apiNewReleasesResponse = """
+            {
+                "albums": {
+                    "href": "https://api.spotify.com/v1/browse/new-releases?offset=0&limit=20",
+                    "items": [
+                        {
+                            "album_type": "single",
+                            "artists": [
+                                {
+                                    "external_urls": {
+                                        "spotify": "https://open.spotify.com/artist/2RdwBSPQiwcmiDo9kixcl8"
+                                    },
+                                    "href": "https://api.spotify.com/v1/artists/2RdwBSPQiwcmiDo9kixcl8",
+                                    "id": "2RdwBSPQiwcmiDo9kixcl8",
+                                    "name": "Pharrell Williams",
+                                    "type": "artist",
+                                    "uri": "spotify:artist:2RdwBSPQiwcmiDo9kixcl8"
+                                }
+                            ],
+                            "available_markets": [
+                                "AD"
+                            ],
+                            "external_urls": {
+                                "spotify": "https://open.spotify.com/album/5ZX4m5aVSmWQ5iHAPQpT71"
+                            },
+                            "href": "https://api.spotify.com/v1/albums/5ZX4m5aVSmWQ5iHAPQpT71",
+                            "id": "5ZX4m5aVSmWQ5iHAPQpT71",
+                            "images": [
+                                {
+                                    "height": 640,
+                                    "url": "https://i.scdn.co/image/e6b635ebe3ef4ba22492f5698a7b5d417f78b88a",
+                                    "width": 640
+                                },
+                                {
+                                    "height": 300,
+                                    "url": "https://i.scdn.co/image/92ae5b0fe64870c09004dd2e745a4fb1bf7de39d",
+                                    "width": 300
+                                },
+                                {
+                                    "height": 64,
+                                    "url": "https://i.scdn.co/image/8a7ab6fc2c9f678308ba0f694ecd5718dc6bc930",
+                                    "width": 64
+                                }
+                            ],
+                            "name": "Runnin'",
+                            "type": "album",
+                            "uri": "spotify:album:5ZX4m5aVSmWQ5iHAPQpT71"
+                        },
+                        {
+                            "album_type": "single",
+                            "artists": [
+                                {
+                                    "external_urls": {
+                                        "spotify": "https://open.spotify.com/artist/3TVXtAsR1Inumwj472S9r4"
+                                    },
+                                    "href": "https://api.spotify.com/v1/artists/3TVXtAsR1Inumwj472S9r4",
+                                    "id": "3TVXtAsR1Inumwj472S9r4",
+                                    "name": "Drake2",
+                                    "type": "artist",
+                                    "uri": "spotify:artist:3TVXtAsR1Inumwj472S9r4"
+                                }
+                            ],
+                            "available_markets": [
+                                "AD"
+                            ],
+                            "external_urls": {
+                                "spotify": "https://open.spotify.com/album/0geTzdk2InlqIoB16fW9Nd"
+                            },
+                            "href": "https://api.spotify.com/v1/albums/0geTzdk2InlqIoB16fW9Nd",
+                            "id": "0geTzdk2InlqIoB16fW9Nd",
+                            "images": [
+                                {
+                                    "height": 640,
+                                    "url": "https://i.scdn.co/image/d40e9c3d22bde2fbdb2ecc03cccd7a0e77f42e4c",
+                                    "width": 640
+                                },
+                                {
+                                    "height": 300,
+                                    "url": "https://i.scdn.co/image/dff06a3375f6d9b32ecb081eb9a60bbafecb5731",
+                                    "width": 300
+                                },
+                                {
+                                    "height": 64,
+                                    "url": "https://i.scdn.co/image/808a02bd7fc59b0652c9df9f68675edbffe07a79",
+                                    "width": 64
+                                }
+                            ],
+                            "name": "Sneakin'",
+                            "type": "album",
+                            "uri": "spotify:album:0geTzdk2InlqIoB16fW9Nd"
+                        }
+                    ],
+                    "limit": 20,
+                    "next": null,
+                    "offset": 0,
+                    "previous": null,
+                    "total": 2
+                }
+            }""".replaceAll(spotifyServerUrl, resourceServerUrl);
+
+
+        private static final String apiFeaturedPlaylistsResponse = """
+            {
+                "message": "Monday morning music, coming right up!",
+                "playlists": {
+                    "href": "https://api.spotify.com/v1/browse/featured-playlists?offset=0&limit=20",
+                    "items": [
+                        {
+                            "collaborative": false,
+                            "external_urls": {
+                                "spotify": "http://open.spotify.com/user/spotify/playlist/6ftJBzU2LLQcaKefMi7ee7"
+                            },
+                            "href": "https://api.spotify.com/v1/users/spotify/playlists/6ftJBzU2LLQcaKefMi7ee7",
+                            "id": "6ftJBzU2LLQcaKefMi7ee7",
+                            "images": [
+                                {
+                                    "height": 300,
+                                    "url": "https://i.scdn.co/image/7bd33c65ebd1e45975bbcbbf513bafe272f033c7",
+                                    "width": 300
+                                }
+                            ],
+                            "name": "Monday Morning Mood",
+                            "owner": {
+                                "external_urls": {
+                                    "spotify": "http://open.spotify.com/user/spotify"
+                                },
+                                "href": "https://api.spotify.com/v1/users/spotify",
+                                "id": "spotify",
+                                "type": "user",
+                                "uri": "spotify:user:spotify"
+                            },
+                            "public": null,
+                            "snapshot_id": "WwGvSIVUkUvGvqjgj/bQHlRycYmJ2TkoIxYfoalWlmIZT6TvsgvGMgtQ2dGbkrAW",
+                            "tracks": {
+                                "href": "https://api.spotify.com/v1/users/spotify/playlists/6ftJBzU2LLQcaKefMi7ee7/tracks",
+                                "total": 245
+                            },
+                            "type": "playlist",
+                            "uri": "spotify:user:spotify:playlist:6ftJBzU2LLQcaKefMi7ee7"
+                        },
+                        {
+                            "collaborative": false,
+                            "external_urls": {
+                                "spotify": "http://open.spotify.com/user/spotify__sverige/playlist/4uOEx4OUrkoGNZoIlWMUbO"
+                            },
+                            "href": "https://api.spotify.com/v1/users/spotify__sverige/playlists/4uOEx4OUrkoGNZoIlWMUbO",
+                            "id": "4uOEx4OUrkoGNZoIlWMUbO",
+                            "images": [
+                                {
+                                    "height": 300,
+                                    "url": "https://i.scdn.co/image/24aa1d1b491dd529b9c03392f350740ed73438d8",
+                                    "width": 300
+                                }
+                            ],
+                            "name": "Upp och hoppa!",
+                            "owner": {
+                                "external_urls": {
+                                    "spotify": "http://open.spotify.com/user/spotify__sverige"
+                                },
+                                "href": "https://api.spotify.com/v1/users/spotify__sverige",
+                                "id": "spotify__sverige",
+                                "type": "user",
+                                "uri": "spotify:user:spotify__sverige"
+                            },
+                            "public": null,
+                            "snapshot_id": "0j9Rcbt2KtCXEXKtKy/tnSL5r4byjDBOIVY1dn4S6GV73EEUgNuK2hU+QyDuNnXz",
+                            "tracks": {
+                                "href": "https://api.spotify.com/v1/users/spotify__sverige/playlists/4uOEx4OUrkoGNZoIlWMUbO/tracks",
+                                "total": 38
+                            },
+                            "type": "playlist",
+                            "uri": "spotify:user:spotify__sverige:playlist:4uOEx4OUrkoGNZoIlWMUbO"
+                        }
+                    ],
+                    "limit": 20,
+                    "next": null,
+                    "offset": 0,
+                    "previous": null,
+                    "total": 2
+                }
+            }""";
+
+        private static final TempWebServerMock resourceServerMock = new TempWebServerMock(resourceServerPort)
+                .setPage("/v1/browse/categories", apiCategoriesResponse)
+                .setPage("/v1/browse/categories/party/playlists", apiPlaylistsPartyResponse)
+                // unpredictable error on toplists request!!!
+                .setPage("/v1/browse/categories/toplists/playlists", apiTestErrorResponse)
+                .setPage("/v1/browse/new-releases", apiNewReleasesResponse)
+                .setPage("/v1/browse/featured-playlists", apiFeaturedPlaylistsResponse);
+
+        private static final MockTokenServer tokenServer = new MockTokenServer(accessServer);
+        private static final MockTokenServer resourceServer = new MockTokenServer(resourceServerMock);
+
+        public static void auth(TestedProgram userProgram) {
+
+            Server server = new Server(userProgram, fictiveAuthCode);
+            server.start();
+
+            synchronized (accessServer) {
+                if (!accessServer.isStarted())
+                    tokenServer.start();
+            }
+
+            synchronized (resourceServerMock) {
+                if (!resourceServerMock.isStarted())
+                    resourceServer.start();
+            }
+
+            userProgram.goBackground();
+            userProgram.execute("auth");
+
+            try {
+                server.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            if (Server.checkResult != null) {
+                throw new WrongAnswer(Server.checkResult.getFeedback());
+            }
+
+            userProgram.stopBackground();
+        }
+
+        private void checkAlbum1(String reply) {
+            String album1 = """
+                Runnin'
+                [Pharrell Williams]
+                https://open.spotify.com/album/5ZX4m5aVSmWQ5iHAPQpT71"""
+                .replaceAll(spotifyServerUrl, resourceServerUrl);
+
+            String album2 = """
+                Sneakin'
+                [Drake2]
+                https://open.spotify.com/album/0geTzdk2InlqIoB16fW9Nd"""
+                .replaceAll(spotifyServerUrl, resourceServerUrl);
+
+            if (!reply.contains(album1)) {
+                throw new WrongAnswer("Album from page 1 not appeared on \"new\" action");
+            }
+            if (reply.contains(album2)) {
+                throw new WrongAnswer("Album from page 2 appeared on page 1 on \"new\" action");
+            }
+            if (!reply.contains("---PAGE 1 OF 2---")) {
+                throw new WrongAnswer("Something wrong with pagination format. Not found ---PAGE 1 OF 2---");
+            }
+        }
+
+        private void checkAlbum2(String reply) {
+            String album1 = """
+                Runnin'
+                [Pharrell Williams]
+                https://open.spotify.com/album/5ZX4m5aVSmWQ5iHAPQpT71"""
+                .replaceAll(spotifyServerUrl, resourceServerUrl);
+
+            String album2 = """
+                Sneakin'
+                [Drake2]
+                https://open.spotify.com/album/0geTzdk2InlqIoB16fW9Nd"""
+                .replaceAll(spotifyServerUrl, resourceServerUrl);
+
+            if (!reply.contains(album2)) {
+                throw new WrongAnswer("Album from page 2 not appeared on \"new\" action");
+            }
+            if (reply.contains(album1)) {
+                throw new WrongAnswer("Album from page 1 appeared on page 2 on \"new\" action");
+            }
+
+            if (!reply.contains("---PAGE 2 OF 2---")) {
+                throw new WrongAnswer("Something wrong with pagination format. Not found ---PAGE 2 OF 2---");
+            }
+        }
+
+        private int countAppearances(String str, String findStr) {
+            int lastIndex = 0;
+            int count = 0;
+
+            while (lastIndex != -1) {
+                lastIndex = str.indexOf(findStr, lastIndex);
+                if (lastIndex != -1) {
+                    count++;
+                    lastIndex += findStr.length();
+                }
+            }
+            return count;
+        }
+
+        @DynamicTest
+        CheckResult testAuth() {
+
+            TestedProgram userProgram = new TestedProgram();
+            userProgram.start(arguments);
+            userProgram.setReturnOutputAfterExecution(false);
+
+            auth(userProgram);
+
+            userProgram.execute("exit");
+            userProgram.stop();
+
+            return CheckResult.correct();
+
+        }
+
+        void testNewAlbums(TestedProgram userProgram) {
+            userProgram.execute("new");
+
+            String output = userProgram.getOutput();
+            checkAlbum1(output);
+
+            userProgram.execute("prev");
+            output = userProgram.getOutput();
+            if (!output.contains("No more pages")) {
+                throw new WrongAnswer("Your output should be `No more pages` on -1 page.");
+            }
+
+            userProgram.execute("next");
+            output = userProgram.getOutput();
+            checkAlbum2(output);
+
+            userProgram.execute("next");
+            output = userProgram.getOutput();
+            if (!output.contains("No more pages")) {
+                throw new WrongAnswer("Your output should be `No more pages` after the last page.");
+            }
+
+            userProgram.execute("prev");
+            output = userProgram.getOutput();
+            checkAlbum1(output);
+
+            userProgram.execute("exit");
+        }
+
+        @DynamicTest
+        CheckResult testNew() {
+
+            TestedProgram userProgram = new TestedProgram();
+            userProgram.start(arguments);
+            userProgram.setReturnOutputAfterExecution(false);
+            auth(userProgram);
+
+            if(!resourceServerMock.getAccess_token().contains(fictiveAccessToken)) {
+                return CheckResult.wrong("Access Token is incorrect!");
+            }
+
+            testNewAlbums(userProgram);
+            testNewAlbums(userProgram);
+
+            userProgram.stop();
+
+            return CheckResult.correct();
+        }
+
+        @DynamicTest
+        CheckResult testCategoriesNextPrev() {
+
+            TestedProgram userProgram = new TestedProgram();
+            userProgram.start(arguments);
+            userProgram.setReturnOutputAfterExecution(false);
+            auth(userProgram);
+
+            String category1 = "Top Lists";
+            String category2 = "Super Mood";
+            String category3 = "Party Time";
+
+
+
+            userProgram.execute("categories");
+
+            if(!resourceServerMock.getAccess_token().contains(fictiveAccessToken)) {
+                return CheckResult.wrong("Access Token is incorrect!");
+            }
+
+            String output = userProgram.getOutput();
+            if (!output.contains("---PAGE 1 OF 3---")) {
+                return CheckResult.wrong("Something wrong with pagination format. Not found ---PAGE 1 OF 3---");
+            }
+            if (countAppearances(output, category1) != 1
+                    || countAppearances(output, category2) != 0
+                    || countAppearances(output, category3) != 0) {
+                return CheckResult.wrong("Something wrong with showing categories and pages.\n" +
+                                         "Should include \"" + category1 + "\" once, " +
+                                         "exclude \"" + category2 + "\", and \"" + category3 + "\".");
+            }
+
+            userProgram.execute("next");
+            output = userProgram.getOutput();
+            if (!output.contains("---PAGE 2 OF 3---")) {
+                return CheckResult.wrong("Something wrong with pagination format. Not found ---PAGE 2 OF 3---");
+            }
+            if (countAppearances(output, category1) != 0
+                    || countAppearances(output, category2) != 1
+                    || countAppearances(output, category3) != 0) {
+                return CheckResult.wrong("Something wrong with showing categories and pages.\n" +
+                                         "Should include \"" + category2 + "\" once, " +
+                                         "exclude \"" + category1 + "\", and \"" + category3 + "\".");
+            }
+
+            userProgram.execute("next");
+            output = userProgram.getOutput();
+            if (!output.contains("---PAGE 3 OF 3---")) {
+                return CheckResult.wrong("Something wrong with pagination format. Not found ---PAGE 3 OF 3---");
+            }
+            if (countAppearances(output, category1) != 0
+                    || countAppearances(output, category2) != 0
+                    || countAppearances(output, category3) != 1) {
+                return CheckResult.wrong("Something wrong with showing categories and pages.\n" +
+                                         "Should include \"" + category3 + "\" once, " +
+                                         "exclude \"" + category1 + "\", and \"" + category2 + "\".");
+            }
+
+            userProgram.execute("prev");
+            output = userProgram.getOutput();
+            if (!output.contains("---PAGE 2 OF 3---")) {
+                return CheckResult.wrong("Something wrong with pagination format. Not found ---PAGE 2 OF 3---");
+            }
+            if (countAppearances(output, category1) != 0
+                    || countAppearances(output, category2) != 1
+                    || countAppearances(output, category3) != 0) {
+                return CheckResult.wrong("Something wrong with showing categories and pages.\n" +
+                                         "Should include \"" + category2 + "\" once, " +
+                                         "exclude \"" + category1 + "\", and \"" + category3 + "\".");
+            }
+
+            userProgram.execute("prev");
+            output = userProgram.getOutput();
+            if (!output.contains("---PAGE 1 OF 3---")) {
+                return CheckResult.wrong("Something wrong with pagination format. Not found ---PAGE 1 OF 3---");
+            }
+            if (countAppearances(output, category1) != 1
+                    || countAppearances(output, category2) != 0
+                    || countAppearances(output, category3) != 0) {
+                return CheckResult.wrong("Something wrong with showing categories and pages.\n" +
+                                         "Should include \"" + category1 + "\" once, " +
+                                         "exclude \"" + category2 + "\", and \"" + category3 + "\".");
+            }
+
+            userProgram.stop();
+            return CheckResult.correct();
+        }
+
+        @DynamicTest
+        CheckResult testFeatured() {
+
+            TestedProgram userProgram = new TestedProgram();
+            userProgram.start(arguments);
+            userProgram.setReturnOutputAfterExecution(false);
+            auth(userProgram);
+
+            String featured1 =
+                    "Monday Morning Mood\n" +
+                    "http://open.spotify.com/user/spotify/playlist/6ftJBzU2LLQcaKefMi7ee7"
+                    .replaceAll(spotifyServerUrl, resourceServerUrl);
+
+            String featured2 =
+                    "Upp och hoppa!\n" +
+                    "http://open.spotify.com/user/spotify__sverige/playlist/4uOEx4OUrkoGNZoIlWMUbO"
+                    .replaceAll(spotifyServerUrl, resourceServerUrl);
+
+            userProgram.execute("featured");
+
+            if(!resourceServerMock.getAccess_token().contains(fictiveAccessToken)) {
+                return CheckResult.wrong("Access Token is incorrect!");
+            }
+
+            String output = userProgram.getOutput();
+            if (!output.contains("---PAGE 1 OF 2---")) {
+                return CheckResult.wrong("Something wrong with pagination format. Not found ---PAGE 1 OF 2---");
+            }
+            if (countAppearances(output, featured1) != 1
+                    || countAppearances(output, featured2) != 0) {
+                return CheckResult.wrong("Something wrong with showing featured playlists and pages");
+            }
+
+            userProgram.execute("next");
+            output = userProgram.getOutput();
+            if (!output.contains("---PAGE 2 OF 2---")) {
+                return CheckResult.wrong("Something wrong with pagination format. Not found ---PAGE 2 OF 2---");
+            }
+            if (countAppearances(output, featured1) != 0
+                    || countAppearances(output, featured2) != 1) {
+                return CheckResult.wrong("Something wrong with showing featured playlists and pages");
+            }
+
+            userProgram.execute("prev");
+            output = userProgram.getOutput();
+            if (!output.contains("---PAGE 1 OF 2---")) {
+                return CheckResult.wrong("Something wrong with pagination format. Not found ---PAGE 1 OF 2---");
+            }
+            if (countAppearances(output, featured1) != 1
+                    || countAppearances(output, featured2) != 0) {
+                return CheckResult.wrong("Something wrong with showing featured playlists and pages");
+            }
+
+            userProgram.execute("exit");
+            userProgram.stop();
+
+            return CheckResult.correct();
+        }
+
+        @DynamicTest
+        CheckResult testPlayList() {
+
+            TestedProgram userProgram = new TestedProgram();
+            userProgram.start(arguments);
+            userProgram.setReturnOutputAfterExecution(false);
+            auth(userProgram);
+
+            String playlist1 =
+                    "Noite Eletronica\n" +
+                    "http://open.spotify.com/user/spotifybrazilian/playlist/4k7EZPI3uKMz4aRRrLVfen"
+                    .replaceAll(spotifyServerUrl, resourceServerUrl);
+
+            String playlist2 =
+                    "Festa Indie\n" +
+                    "http://open.spotify.com/user/spotifybrazilian/playlist/4HZh0C9y80GzHDbHZyX770"
+                    .replaceAll(spotifyServerUrl, resourceServerUrl);
+
+            userProgram.execute("playlists Party Time");
+
+            if(!resourceServerMock.getAccess_token().contains(fictiveAccessToken)) {
+                return CheckResult.wrong("Access Token is incorrect!");
+            }
+
+            String output = userProgram.getOutput();
+            if (!output.contains("---PAGE 1 OF 2---")) {
+                return CheckResult.wrong("Something wrong with pagination format. Not found ---PAGE 1 OF 2---");
+            }
+            if (countAppearances(output, playlist1) != 1
+                    || countAppearances(output, playlist2) != 0) {
+                return CheckResult.wrong("Something wrong with showing playlists and pages");
+            }
+
+            userProgram.execute("next");
+            output = userProgram.getOutput();
+            if (!output.contains("---PAGE 2 OF 2---")) {
+                return CheckResult.wrong("Something wrong with pagination format. Not found ---PAGE 2 OF 2---");
+            }
+            if (countAppearances(output, playlist1) != 0
+                    || countAppearances(output, playlist2) != 1) {
+                return CheckResult.wrong("Something wrong with showing playlists and pages");
+            }
+
+            userProgram.execute("prev");
+            output = userProgram.getOutput();
+            if (!output.contains("---PAGE 1 OF 2---")) {
+                return CheckResult.wrong("Something wrong with pagination format. Not found ---PAGE 1 OF 2---");
+            }
+            if (countAppearances(output, playlist1) != 1
+                    || countAppearances(output, playlist2) != 0) {
+                return CheckResult.wrong("Something wrong with showing playlists and pages");
+            }
+
+            userProgram.execute("exit");
+            userProgram.stop();
+
+            return CheckResult.correct();
+        }
+
+
+        @AfterClass
+        public static void afterTest() {
+            tokenServer.stopMock();
+            resourceServer.stopMock();
+        }
+
+    }
+  learner_created: false
+- name: test/Server.java
+  visible: false
+  text: |
+    import org.hyperskill.hstest.dynamic.output.OutputHandler;
+    import org.hyperskill.hstest.testcase.CheckResult;
+    import org.hyperskill.hstest.testing.TestedProgram;
+
+    import java.net.URI;
+    import java.net.http.HttpClient;
+    import java.net.http.HttpRequest;
+    import java.net.http.HttpResponse;
+    import java.net.http.HttpTimeoutException;
+    import java.time.Duration;
+
+    public class Server extends Thread {
+
+        TestedProgram userProgram;
+        private final String fictiveAuthCode;
+        public static CheckResult checkResult = null;
+        String redirectUri = "";
+
+
+        public Server(TestedProgram userProgram, String fictiveAuthCode) {
+            this.userProgram = userProgram;
+            this.fictiveAuthCode = fictiveAuthCode;
+        }
+
+        @Override
+        public void run() {
+            long searchTime = System.currentTimeMillis();
+
+            while (!Thread.interrupted()) {
+
+                if (System.currentTimeMillis() - searchTime > 1000 * 9) {
+                    checkResult = CheckResult.wrong("Not found a link with redirect_uri after 9 seconds.");
+                    return;
+                }
+
+                String out = OutputHandler.getDynamicOutput();
+                if (out.contains("redirect_uri=")) {
+                    redirectUri = out.split("redirect_uri=")[1];
+                    if (redirectUri.contains("&")) {
+                        redirectUri = redirectUri.split("&")[0];
+                    }
+                    if (redirectUri.contains("\n")) {
+                        redirectUri = redirectUri.split("\\R")[0];
+                    }
+                    break;
+                }
+
+                try {
+                    sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            try {
+                HttpClient client = HttpClient.newBuilder().build();
+                HttpRequest emptyRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(redirectUri))
+                    .timeout(Duration.ofMillis(500))
+                    .GET()
+                    .build();
+                HttpRequest errorRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(redirectUri + "?error=access_denied"))
+                    .timeout(Duration.ofMillis(500))
+                    .GET()
+                    .build();
+                HttpRequest codeRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(redirectUri + "?code=" + fictiveAuthCode))
+                    .timeout(Duration.ofMillis(500))
+                    .GET()
+                    .build();
+
+                System.out.println("Tester: making requests to redirect uri: " + redirectUri);
+                HttpResponse<String> badResponse = client.send(emptyRequest, HttpResponse.BodyHandlers.ofString());
+                System.out.println("Tester: done request 1: " + badResponse.body());
+                HttpResponse<String> badResponse2 = client.send(errorRequest, HttpResponse.BodyHandlers.ofString());
+                System.out.println("Tester: done request 2: " + badResponse2.body());
+                HttpResponse<String> goodResponse = client.send(codeRequest, HttpResponse.BodyHandlers.ofString());
+                System.out.println("Tester: done request 3: " + goodResponse.body());
+
+                if (!badResponse.body().contains("Authorization code not found. Try again.")
+                    || !badResponse2.body().contains("Authorization code not found. Try again.")) {
+                    checkResult = CheckResult.wrong("You should send to the browser: `Authorization code not found. Try again.` if there is no code.");
+                    return;
+                }
+
+                if (!goodResponse.body().contains("Got the code. Return back to your program.")) {
+                    checkResult = CheckResult.wrong("\"You should send `Got the code. Return back to your program.` \" +\n" +
+                        "                        \"if the query contains the code.");
+                }
+            } catch (HttpTimeoutException e) {
+                checkResult = CheckResult.wrong("Not received any response from the server, found in redirect_uri: "
+                    + redirectUri);
+            } catch (InterruptedException e) {
+                checkResult = CheckResult.wrong("Request to " + redirectUri + " was interrupted. " +
+                    "Make sure, that you give the right feedback in your browser.");
+            } catch (Exception e) {
+                System.out.println("Tester: Error: " + e.getMessage());
+                checkResult = CheckResult.wrong("Something wrong with the server response.\n" +
+                    "Make sure, that you get the right feedback in your browser.");
+            }
+        }
+    }
+  learner_created: false
+- name: src/advisor/models/Item.java
+  visible: true
+  text: |
+    package advisor.models;
+
+    public class Item<T> {
+
+        T t;
+
+        public Item(T t) {
+            this.t = t;
+        }
+
+        public T getT() {
+            return t;
+        }
+    }
+  learner_created: true
+- name: src/advisor/services/MusicService.java
+  visible: true
+  text: |
+    package advisor.connection;
+
+    import advisor.models.Item;
+    import com.google.gson.JsonArray;
+    import com.google.gson.JsonObject;
+    import com.google.gson.JsonParser;
+
+    import java.io.IOException;
+    import java.net.URI;
+    import java.net.http.HttpClient;
+    import java.net.http.HttpRequest;
+    import java.net.http.HttpResponse;
+    import java.util.*;
+
+    import static advisor.GlobalVariables.*;
+
+    public class ConnectionUtil {
+
+        private final String host;
+        private final String api;
+        private final Server server;
+        private String accessCode;
+        private String accessToken;
+        private String tokenType;
+        private HttpRequest request;
+        private final HttpClient client;
+        private HttpResponse<String> httpResponse;
+        private JsonObject jsonObject;
+        private Map<String, Item<String>> categoriesMap;
+
+        private ConnectionUtil(Server server, String host, String api) {
+            this.host = host;
+            this.server = server;
+            this.api = api;
+            this.client = HttpClient.newBuilder().build();
+        }
+
+        public static ConnectionUtil createConnectionUtil(Server server, String host, String api) {
+            return new ConnectionUtil(server, host, api);
+        }
+
+        public void authorizeAccess() {
+            String uri = host + AUTHORIZE_ENDPOINT;
+            String authorizationLink = String.format("%s?client_id=%s&redirect_uri=%s&response_type=%s",
+                    uri, CLIENT_ID, REDIRECT_URL, RESPONSE_TYPE);
+
+            server.start();
+            server.createContext();
+            System.out.println("use this link to request the access code:");
+            System.out.println(authorizationLink);
+            System.out.println("waiting for code...");
+
+            accessCode = server.getCode();
+            while (accessCode == null) {
+                accessCode = server.getCode();
+            }
+
+            System.out.println("code received");
+            System.out.println("making http request for access_token...");
+            requestAccessToken();
+            System.out.println("---SUCCESS---");
+            server.stop();
+        }
+
+        private void requestAccessToken() {
+
+            String requestData = "grant_type=" + GRANT_TYPE + "&code=" + accessCode + "&redirect_uri="
+                    + REDIRECT_URL + "&client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET;
+
+            request = HttpRequest.newBuilder()
+                    .uri(URI.create(host + TOKEN_ENDPOINT))
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .POST(HttpRequest.BodyPublishers.ofString(requestData))
+                    .build();
+            try {
+                httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
+                String response = httpResponse.body();
+                extractAccessToken(response);
+                // System.out.println("response:\n" + httpResponse.body());
+            } catch (IOException | InterruptedException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        private void extractAccessToken(String response) {
+            jsonObject = JsonParser.parseString(response).getAsJsonObject();
+            accessToken = jsonObject.get("access_token").getAsString();
+            tokenType = jsonObject.get("token_type").getAsString();
+        }
+
+        public boolean isCodeReceived() {
+            return accessCode != null;
+        }
+
+        public void getCategories(boolean printCategories) {
+
+            request = HttpRequest.newBuilder()
+                    .header("Authorization", tokenType + " " + accessToken)
+                    .uri(URI.create(api + CATEGORIES_ENDPOINT))
+                    .GET()
+                    .build();
+            try {
+                httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
+                List<Item<String>> cats = extractCategories(httpResponse.body());
+                if (printCategories) {
+                    printItems(cats);
+                }
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        private List<Item<String>> extractCategories(String jsonString) {
+            List<Item<String>> result = new ArrayList<>();
+            categoriesMap = new HashMap<>();
+            jsonObject = JsonParser.parseString(jsonString).getAsJsonObject();
+            JsonArray items = jsonObject.get("categories").getAsJsonObject().getAsJsonArray("items");
+
+            for (int i = 0; i < items.size(); i++) {
+                JsonObject item = (JsonObject) items.get(i);
+                Item<String> cat = new Item<>(item.get("name").getAsString());
+                categoriesMap.put(item.get("id").getAsString(), cat);
+                result.add(cat);
+            }
+            return result;
+        }
+
+        private void printItems(List<Item<String>> items) {
+            for (Item<String> item : items) {
+                System.out.println(item.getT());
+            }
+        }
+
+        public void getNewReleases() {
+
+            request = HttpRequest.newBuilder()
+                    .header("Authorization", tokenType + " " + accessToken)
+                    .uri(URI.create(api + RELEASE_ENDPOINT))
+                    .GET()
+                    .build();
+            try {
+                httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
+                List<Item<String>> releases = extractReleases(httpResponse.body());
+                printItems(releases);
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        private List<Item<String>> extractReleases(String body) {
+            List<Item<String>> result = new ArrayList<>();
+            StringBuilder newRelease;
+            List<String> artistNames;
+
+            jsonObject = JsonParser.parseString(body).getAsJsonObject();
+            JsonArray items = jsonObject.get("albums").getAsJsonObject().getAsJsonArray("items");
+
+            for (int i = 0; i < items.size(); i++) {
+                newRelease = new StringBuilder();
+                artistNames = new ArrayList<>();
+                JsonObject item = (JsonObject) items.get(i);
+                String title = item.get("name").getAsString() + "\n";
+                newRelease.append(title);
+                JsonArray artists = item.get("artists").getAsJsonArray();
+
+                for (int j = 0; j < artists.size(); j++) {
+                    JsonObject artist = (JsonObject) artists.get(j);
+                    String artistName = artist.get("name").getAsString();
+                    artistNames.add(artistName);
+                }
+
+                newRelease.append(Arrays.toString(artistNames.toArray())).append("\n");
+                String externalUrl = item.get("external_urls").getAsJsonObject().get("spotify").getAsString();
+                newRelease.append(externalUrl).append("\n");
+                Item<String> release = new Item<>(newRelease.toString());
+
+                result.add(release);
+            }
+            return result;
+        }
+
+
+        /**
+         * Fetch available featured playlists
+         */
+        public void getFeaturedPlaylist() {
+            request = HttpRequest.newBuilder()
+                    .header("Authorization", tokenType + " " + accessToken)
+                    .uri(URI.create(api + FEATURED_PLAYLIST_ENDPOINT))
+                    .GET()
+                    .build();
+            try {
+                httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
+                List<Item<String>> featuredPlaylist = extractPlaylists(httpResponse.body());
+                printItems(featuredPlaylist);
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        /**
+         * Extract all playlists from http responses body
+         * @param response Body of http response
+         * @return List of Items
+         */
+        private List<Item<String>> extractPlaylists(String response) {
+            List<Item<String>> result = new ArrayList<>();
+            jsonObject = JsonParser.parseString(response).getAsJsonObject();
+            jsonObject = jsonObject.get("playlists").getAsJsonObject();
+            JsonArray items = jsonObject.get("items").getAsJsonArray();
+            for (int i = 0; i < items.size(); i++) {
+                JsonObject item = (JsonObject) items.get(i);
+                String playlist = item.get("name").getAsString() +
+                        "\n" +
+                        item.get("external_urls").getAsJsonObject().get("spotify").getAsString() +
+                        "\n";
+
+                Item<String> cat = new Item<>(playlist);
+                result.add(cat);
+            }
+
+            return result;
+        }
+
+        /**
+         * Fetch all playlist by given category
+         * @param category category name
+         */
+        public void getPlaylistByCategory(String category) {
+            String categoryId = getCategoryId(category);
+            if (categoryId != null) {
+                request = HttpRequest.newBuilder()
+                        .header("Authorization", tokenType + " " + accessToken)
+                        .uri(URI.create(api + CATEGORIES_ENDPOINT + "/" + categoryId + "/playlists"))
+                        .GET()
+                        .build();
+                try {
+                    httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
+                    jsonObject = JsonParser.parseString(httpResponse.body()).getAsJsonObject();
+                    if (jsonObject.has("error")) {
+                        System.out.println(jsonObject.get("error").getAsJsonObject().get("message").getAsString());
+                    } else {
+                        List<Item<String>> playlists = extractPlaylists(httpResponse.body());
+                        printItems(playlists);
+                    }
+
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                System.out.println("Unknown category name.");
+            }
+        }
+
+        /**
+         * Find category id of given playlist name before doing http requests
+         * @param category category name
+         * @return Category id
+         */
+        private String getCategoryId(String category) {
+            if (categoriesMap == null) {
+                getCategories(false);
+            }
+
+            String categoryId = null;
+            for (Map.Entry<String, Item<String>> entry : categoriesMap.entrySet()) {
+                if (category.equalsIgnoreCase(entry.getValue().getT())) {
+                    categoryId = entry.getKey();
+                    break;
+                }
+            }
+
+            return categoryId;
+        }
+    }
+  learner_created: true
+- name: src/advisor/server/Server.java
+  visible: true
+  text: |
+    package advisor.connection;
+
+    import com.sun.net.httpserver.HttpServer;
+    import java.io.IOException;
+    import java.net.InetSocketAddress;
+
+    import static advisor.GlobalVariables.*;
+
+    public class Server {
+
+        private String code;
+        private HttpServer server;
+
+        private Server() {
+        }
+
+        public static Server createServer() {
+            return new Server();
+        }
+
+        public void start() {
+            try {
+                this.server = HttpServer.create();
+                this.server.bind(new InetSocketAddress(PORT), IP);
+                server.start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public void createContext() {
+            this.server.createContext("/", (exchange) -> {
+                String msg = "Authorization code not found. Try again.";
+                String query = exchange.getRequestURI().getQuery();
+                if (query != null && query.matches("^code=.+")) {
+                    msg = "Got the code. Return back to your program.";
+                    this.code = query.replaceFirst("^code=", "");
+                }
+                exchange.sendResponseHeaders(200, msg.length());
+                exchange.getResponseBody().write(msg.getBytes());
+                exchange.close();
+            });
+        }
+
+        public void stop() {
+            this.server.stop(MAX_DELAY);
+        }
+
+        public String getCode() {
+            return this.code;
+        }
+    }
+  learner_created: true
+- name: src/advisor/controller/AdvisorController.java
+  visible: true
+  text: |
+    package advisor.command;
+
+    public interface Command {
+
+        void auth();
+        void printNewAlbums();
+        void printFeaturePlaylist();
+        void printCategories();
+        void printPlaylistByCategory(String category);
+        void exit();
+    }
+  learner_created: true
+- name: src/advisor/controller/AdvisorControllerImpl.java
+  visible: true
+  text: |
+    package advisor.command;
+
+    import advisor.connection.ConnectionUtil;
+
+    public class CommandImpl implements Command {
+
+        private final ConnectionUtil connectionUtil;
+        private boolean accessAuthorized;
+
+        public CommandImpl(ConnectionUtil connectionUtil) {
+            this.connectionUtil = connectionUtil;
+        }
+
+        @Override
+        public void auth() {
+            connectionUtil.authorizeAccess();
+            accessAuthorized = connectionUtil.isCodeReceived();
+        }
+
+        @Override
+        public void printNewAlbums() {
+            if (accessAuthorized) {
+                connectionUtil.getNewReleases();
+            } else {
+                System.out.println("Please, provide access for application.");
+            }
+        }
+
+        @Override
+        public void printFeaturePlaylist() {
+            if (accessAuthorized) {
+                connectionUtil.getFeaturedPlaylist();
+            } else {
+                System.out.println("Please, provide access for application.");
+            }
+        }
+
+        @Override
+        public void printCategories() {
+            if (accessAuthorized) {
+                connectionUtil.getCategories(true);
+            } else {
+                System.out.println("Please, provide access for application.");
+            }
+        }
+
+        @Override
+        public void printPlaylistByCategory(String category) {
+            if (accessAuthorized) {
+                connectionUtil.getPlaylistByCategory(category);
+            } else {
+                System.out.println("Please, provide access for application.");
+            }
+        }
+
+        @Override
+        public void exit() {
+            System.out.println("---GOODBYE!---");
+        }
+    }
+  learner_created: true
+- name: test/TempWebServerMock.java
+  visible: false
+  text: |
+    import org.hyperskill.hstest.exception.outcomes.WrongAnswer;
+    import org.hyperskill.hstest.mocks.web.WebPage;
+    import org.hyperskill.hstest.mocks.web.WebServerMock;
+    import org.hyperskill.hstest.mocks.web.request.HttpRequest;
+    import org.hyperskill.hstest.mocks.web.request.HttpRequestParser;
+
+    import java.io.DataInputStream;
+    import java.io.DataOutputStream;
+    import java.io.IOException;
+    import java.net.ServerSocket;
+    import java.net.Socket;
+    import java.util.HashMap;
+    import java.util.Map;
+
+    public class TempWebServerMock extends WebServerMock {
+
+        private static final String DELIM = "/";
+        private static final String fictiveAccessToken = "456456";
+        private static final String authorizationHeader = "Authorization";
+
+    //    public static void main(String[] args) { // for testing
+    //        org.hyperskill.hstest.mocks.web.WebServerMock ws = new org.hyperskill.hstest.mocks.web.WebServerMock(12345);
+    //        ws.start();
+    //        ws.run();
+    //    }
+
+        private ServerSocket serverSocket;
+        private final Map<String, String> pages = new HashMap<>();
+        private final int port;
+
+        private boolean isStarted = false;
+        private boolean isStopped = false;
+
+        private String access_token = "";
+
+        public TempWebServerMock(int port) {
+            super(port);
+            this.port = port;
+        }
+
+        public TempWebServerMock setPage(String url, String content) {
+            return setPage(url, new WebPage().setContent(content));
+        }
+
+        public TempWebServerMock setPage(String url, WebPage page) {
+            if (!url.startsWith(DELIM)) {
+                url = DELIM + url;
+            }
+            pages.put(url, page.contentWithHeader());
+            return this;
+        }
+
+        public String getAccess_token() {
+            return access_token;
+        }
+
+        private void checkRequestHeaders(HttpRequest request) throws WrongAnswer {
+            Map<String,String> requestHeaders = request.getHeaders();
+
+            if(requestHeaders.containsKey(authorizationHeader)) {
+                if(requestHeaders.get(authorizationHeader).contains(fictiveAccessToken)) {
+                    access_token = requestHeaders.get(authorizationHeader);
+                }
+            }
+        }
+
+        private String resolveRequest(DataInputStream input) {
+            HttpRequest request = HttpRequestParser.parse(input);
+            checkRequestHeaders(request);
+            return request != null ? request.getEndpoint() : null;
+        }
+
+        private void sendResponse(String path, DataOutputStream output) throws Exception {
+            String response;
+            if (path == null) {
+                response = "Webpage not found!";
+            } else {
+                if (!path.startsWith(DELIM)) {
+                    path = DELIM + path;
+                }
+                response = pages.getOrDefault(path, "Webpage not found!");
+            }
+            for (char c : response.toCharArray()) {
+                output.write(c);
+            }
+        }
+
+        private void handle(Socket socket) throws Exception {
+            DataInputStream input = new DataInputStream(socket.getInputStream());
+            DataOutputStream output = new DataOutputStream(socket.getOutputStream());
+            sendResponse(resolveRequest(input), output);
+            input.close();
+            output.close();
+            socket.close();
+        }
+
+        public void start() {
+            try {
+                serverSocket = new ServerSocket(port);
+            } catch (IOException ignored) { }
+        }
+
+        public void run() {
+            try {
+                while (serverSocket != null && !serverSocket.isClosed()) {
+                    isStarted = true;
+                    isStopped = false;
+                    handle(serverSocket.accept());
+                }
+            } catch (Exception ignored) { }
+            isStarted = false;
+            isStopped = true;
+        }
+
+        public void stop() {
+            try {
+                if (serverSocket != null) {
+                    serverSocket.close();
+                }
+            } catch (IOException ignored) { }
+        }
+
+        public boolean isStarted() {
+            return isStarted;
+        }
+
+        public boolean isStopped() {
+            return isStopped;
+        }
+    }
+  learner_created: false
+- name: src/advisor/client/Client.java
+  visible: true
+  learner_created: true
+- name: src/advisor/view/ItemViewStrategy.java
+  visible: true
+  learner_created: true
+- name: src/advisor/view/index.html
+  visible: true
+  learner_created: true
+- name: src/advisor/auth/BaseOAuth.java
+  visible: true
+  learner_created: true
+- name: src/advisor/services/MusicServiceBuilder.java
+  visible: true
+  learner_created: true
+- name: src/advisor/services/RemoteMusicService.java
+  visible: true
+  learner_created: true
+- name: src/advisor/util/HttpResponseParser.java
+  visible: true
+  learner_created: true
+- name: src/advisor/util/ArgumentMapper.java
+  visible: true
+  learner_created: true
+- name: src/advisor/util/PropertiesLoader.java
+  visible: true
+  learner_created: true
+- name: src/main/resources/application.properties
+  visible: true
+  learner_created: true
+- name: src/advisor/view/ViewerContext.java
+  visible: true
+  learner_created: true
+- name: src/advisor/view/Viewer.java
+  visible: true
+  learner_created: true
+- name: src/advisor/controller/Command.java
+  visible: true
+  learner_created: true
+- name: src/advisor/util/MessageProperties.java
+  visible: true
+  learner_created: true
+- name: src/main/resources/messages.properties
+  visible: true
+  learner_created: true
+- name: src/advisor/MusicAdvisor.java
+  visible: true
+  text: |
+    package advisor;
+
+    import advisor.command.Command;
+
+    import java.util.Scanner;
+
+    public class Advisor {
+
+        private boolean exit;
+        private final Command command;
+
+        private Advisor(Command command) {
+            this.command = command;
+        }
+
+        public static Advisor createAdvisor(Command command) {
+            return new Advisor(command);
+        }
+
+        public void start() {
+            while (!exit) {
+                Scanner scanner = new Scanner(System.in);
+                String request = scanner.nextLine();
+                printResponseToRequest(request);
+            }
+        }
+
+        private void printResponseToRequest(String request) {
+
+            if (request.contains("playlists")) {
+                String playlists = "playlists ";
+                String category = request.substring(playlists.length());
+                command.printPlaylistByCategory(category);
+            } else {
+                switch (request) {
+                    case "new":
+                        command.printNewAlbums();
+                        break;
+                    case "featured":
+                        command.printFeaturePlaylist();
+                        break;
+                    case "categories":
+                        command.printCategories();
+                        break;
+                    case "auth":
+                        command.auth();
+                        break;
+                    case "exit":
+                        command.exit();
+                        exit = true;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+  learner_created: true
+feedback_link: https://hyperskill.org/learn/step/5481#comment
+status: Solved
+feedback:
+  message: Well done! You've finished the project. Select a new project on <a href="https://hyperskill.org/projects">JetBrains
+    Academy</a> to continue learning.
+  time: Sun, 27 Feb 2022 08:46:03 UTC
+record: -1
