@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Optional;
 
 /**
  * This singleton class provide methods useful e.g. for the communication between client and Spotify Web API
@@ -12,20 +13,17 @@ import java.net.http.HttpResponse;
  */
 public class Client {
 
-    private static final Client clientInstance = new Client(HttpClient.newBuilder().build());
+    private static final Client INSTANCE = new Client();
     private final HttpClient httpClient;
     private String responseBody;
     private HttpRequest request;
 
-    private Client(HttpClient httpClient) {
-        this.httpClient = httpClient;
+    {
+        this.httpClient = HttpClient.newBuilder().build();
     }
 
-    public static Client getClientInstance() {
-        if (clientInstance == null) {
-            return new Client(HttpClient.newBuilder().build());
-        }
-        return clientInstance;
+    public static Client getInstance() {
+        return Optional.ofNullable(INSTANCE).orElse(new Client());
     }
 
     /**

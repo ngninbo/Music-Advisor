@@ -78,7 +78,7 @@ public class BaseOAuth {
                 properties.getProperty("CLIENT_ID"),
                 properties.getProperty("CLIENT_SECRET"));
 
-        String response = Client.getClientInstance()
+        String response = Client.getInstance()
                 .createHttpPostRequest(host + properties.getProperty("TOKEN_ENDPOINT"), requestData)
                 .sendHttpRequest();
         extractToken(response);

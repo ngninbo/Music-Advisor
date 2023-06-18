@@ -17,7 +17,7 @@ public class MusicServiceBuilder {
     }
 
     public MusicServiceBuilder withClient() {
-        this.client = Client.getClientInstance();
+        this.client = Client.getInstance();
         return this;
     }
 

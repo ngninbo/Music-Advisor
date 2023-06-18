@@ -13,6 +13,7 @@ import java.util.stream.IntStream;
 
 public class HttpResponseParser {
 
+    public static final String NAME = "name";
     private static List<Item<String>> results;
 
     /**
@@ -27,7 +28,7 @@ public class HttpResponseParser {
         JsonArray playlists = parseHttpResponseAndGetItems(response, "playlists");
         for (int i = 0; i < playlists.size(); i++) {
             JsonObject playlist = playlists.get(i).getAsJsonObject();
-            String name = playlist.get("name").getAsString();
+            String name = playlist.get(NAME).getAsString();
             String url = getExternalUrl(playlist);
             results.add(new Item<>(String.format("%s\n%s\n", name, url)));
         }
@@ -49,13 +50,13 @@ public class HttpResponseParser {
 
         for (int i = 0; i < albums.size(); i++) {
             JsonObject album = albums.get(i).getAsJsonObject();
-            String title = album.get("name").getAsString();
+            String title = album.get(NAME).getAsString();
             JsonArray artists = album.get("artists").getAsJsonArray();
 
             artistNames = new ArrayList<>();
             for (int j = 0; j < artists.size(); j++) {
                 JsonObject artist = artists.get(j).getAsJsonObject();
-                String artistName = artist.get("name").getAsString();
+                String artistName = artist.get(NAME).getAsString();
                 artistNames.add(artistName);
             }
 
@@ -107,7 +108,7 @@ public class HttpResponseParser {
                 .mapToObj(i -> categories.get(i).getAsJsonObject())
                 .collect(Collectors.toMap(
                         item -> item.get("id").getAsString(),
-                        item -> new Item<>(item.get("name").getAsString()),
+                        item -> new Item<>(item.get(NAME).getAsString()),
                         (a, b) -> b)
                 );
     }

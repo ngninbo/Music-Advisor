@@ -15,8 +15,7 @@ import java.util.*;
  * @author Beauclair Dongmo Ngnintedem
  */
 public class MusicService implements RemoteMusicService {
-    
-    private String responseBody;
+
     private final Client client;
     private final String resourceUrl;
     private final String accessToken;
@@ -42,48 +41,31 @@ public class MusicService implements RemoteMusicService {
     
     @Override
     public List<Item<String>> getCategories() {
-
         return new ArrayList<>(getCategoryMap().values());
     }
 
     public Map<String, Item<String>> getCategoryMap() {
-
-        responseBody = client
-                .createHttpRequest(
-                        accessToken,
-                        tokenType,
-                        getUrl("CATEGORIES_ENDPOINT"))
-                .sendHttpRequest();
-
-        return HttpResponseParser.extractCategoryMap(responseBody);
+        return HttpResponseParser.extractCategoryMap(getClient(getUrl("CATEGORIES_ENDPOINT")).sendHttpRequest());
     }
 
     @Override
     public List<Item<String>> getNewReleases() {
-
-        responseBody = client.createHttpRequest(accessToken, tokenType, getUrl("RELEASE_ENDPOINT")).sendHttpRequest();
-
-        return HttpResponseParser.extractReleases(responseBody);
+        return HttpResponseParser.extractReleases(getClient(getUrl("RELEASE_ENDPOINT")).sendHttpRequest());
     }
 
 
     @Override
     public List<Item<String>> getFeaturedPlaylist() {
-
-        responseBody = client.createHttpRequest(accessToken, tokenType, getUrl("FEATURED_PLAYLIST_ENDPOINT"))
-                .sendHttpRequest();
-
-        return HttpResponseParser.extractPlaylists(responseBody);
+        return HttpResponseParser.extractPlaylists(getClient(getUrl("FEATURED_PLAYLIST_ENDPOINT"))
+                .sendHttpRequest());
     }
 
     @Override
     public List<Item<String>> getPlaylistByCategory(String category) {
         Optional<String> id = getCategoryId(category);
         if (id.isPresent()) {
-            responseBody = client.createHttpRequest(accessToken,
-                    tokenType,
-                    String.format("%s/%s/playlists", getUrl("CATEGORIES_ENDPOINT"), id.get())
-                    ).sendHttpRequest();
+            String responseBody = getClient(String.format("%s/%s/playlists", getUrl("CATEGORIES_ENDPOINT"), id.get()))
+                    .sendHttpRequest();
             if (HttpResponseParser.httpResponseBodyContainsError(responseBody)) {
                 System.out.println(HttpResponseParser.getErrorMessage(responseBody));
             } else {
@@ -110,6 +92,10 @@ public class MusicService implements RemoteMusicService {
                 .filter(el -> category.equalsIgnoreCase(el.getValue().getT()))
                 .findFirst()
                 .map(Map.Entry::getKey);
+    }
+
+    private Client getClient(String endpoint) {
+        return client.createHttpRequest(accessToken, tokenType, endpoint);
     }
 
     private String getUrl(String endpointKey) {

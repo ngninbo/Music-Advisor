@@ -7,14 +7,12 @@ import advisor.services.MusicServiceBuilder;
 import advisor.util.ArgumentMapper;
 import advisor.util.MessageProperties;
 import advisor.util.PropertiesLoader;
-import advisor.view.ItemViewStrategy;
 import advisor.view.ViewerContext;
 import advisor.view.Viewer;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 
 public class AdvisorControllerImpl implements AdvisorController {
@@ -75,17 +73,17 @@ public class AdvisorControllerImpl implements AdvisorController {
 
     @Override
     public void viewNewAlbums() {
-        viewerContext.setStrategy(new Viewer(musicService.getNewReleases(), page)).nextPage();
+        viewerContext.setStrategy(new Viewer(musicService.getNewReleases(), page)).show();
     }
 
     @Override
     public void viewFeaturePlaylist() {
-        viewerContext.setStrategy(new Viewer(musicService.getFeaturedPlaylist(), page)).nextPage();
+        viewerContext.setStrategy(new Viewer(musicService.getFeaturedPlaylist(), page)).show();
     }
 
     @Override
     public void viewCategories() {
-        viewerContext.setStrategy(new Viewer(musicService.getCategories(), page)).nextPage();
+        viewerContext.setStrategy(new Viewer(musicService.getCategories(), page)).show();
     }
 
     @Override
@@ -93,7 +91,7 @@ public class AdvisorControllerImpl implements AdvisorController {
         List<Item<String>> items = musicService.getPlaylistByCategory(category);
 
         if (items.size() > 0) {
-            viewerContext.setStrategy(new Viewer(items, page)).nextPage();
+            viewerContext.setStrategy(new Viewer(items, page)).show();
         } else {
             log("UNKNOWN_CATEGORY_NAME");
         }
@@ -102,15 +100,11 @@ public class AdvisorControllerImpl implements AdvisorController {
 
     @Override
     public void next() {
-        Optional.ofNullable(viewerContext.getStrategy()).ifPresentOrElse(ItemViewStrategy::next, this::printListIsEmpty);
+        viewerContext.next();
     }
 
     @Override
     public void prev() {
-        Optional.ofNullable(viewerContext.getStrategy()).ifPresentOrElse(ItemViewStrategy::prev, this::printListIsEmpty);
-    }
-
-    private void printListIsEmpty() {
-        log("SELECT_LIST_FIRST");
+        viewerContext.prev();
     }
 }
