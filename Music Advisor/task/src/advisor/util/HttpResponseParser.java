@@ -2,19 +2,17 @@ package advisor.util;
 
 import advisor.models.Item;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class HttpResponseParser {
 
     public static final String NAME = "name";
-    private static List<Item<String>> results;
 
     /**
      * Extract all playlists from http responses body
@@ -23,17 +21,12 @@ public class HttpResponseParser {
      * @return List of Items
      */
     public static List<Item<String>> extractPlaylists(String response) {
-
-        results = new ArrayList<>();
-        JsonArray playlists = parseHttpResponseAndGetItems(response, "playlists");
-        for (int i = 0; i < playlists.size(); i++) {
-            JsonObject playlist = playlists.get(i).getAsJsonObject();
-            String name = playlist.get(NAME).getAsString();
-            String url = getExternalUrl(playlist);
-            results.add(new Item<>(String.format("%s\n%s\n", name, url)));
-        }
-
-        return results;
+        return parseHttpResponseAndGetItems(response, "playlists")
+                .asList()
+                .stream()
+                .map(JsonElement::getAsJsonObject)
+                .map(HttpResponseParser::getPlaylist)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -43,29 +36,12 @@ public class HttpResponseParser {
      * @return List of new releases
      */
     public static List<Item<String>> extractReleases(String responseBody) {
-        results = new ArrayList<>();
-        List<String> artistNames;
-
-        JsonArray albums = parseHttpResponseAndGetItems(responseBody, "albums");
-
-        for (int i = 0; i < albums.size(); i++) {
-            JsonObject album = albums.get(i).getAsJsonObject();
-            String title = album.get(NAME).getAsString();
-            JsonArray artists = album.get("artists").getAsJsonArray();
-
-            artistNames = new ArrayList<>();
-            for (int j = 0; j < artists.size(); j++) {
-                JsonObject artist = artists.get(j).getAsJsonObject();
-                String artistName = artist.get(NAME).getAsString();
-                artistNames.add(artistName);
-            }
-
-            String externalUrl = getExternalUrl(album);
-            Item<String> newRelease = new Item<>(String.format("%s\n%s\n%s\n",
-                    title, artistNames, externalUrl));
-            results.add(newRelease);
-        }
-        return results;
+        return parseHttpResponseAndGetItems(responseBody, "albums")
+                .asList()
+                .stream()
+                .map(JsonElement::getAsJsonObject)
+                .map(HttpResponseParser::getNewRelease)
+                .collect(Collectors.toList());
     }
 
     private static String getExternalUrl(JsonObject jsonObject) {
@@ -101,15 +77,30 @@ public class HttpResponseParser {
     }
 
     public static Map<String, Item<String>> extractCategoryMap(String responseBody) {
+        return parseHttpResponseAndGetItems(responseBody, "categories")
+                .asList()
+                .stream()
+                .map(JsonElement::getAsJsonObject)
+                .collect(Collectors.toMap(item -> item.get("id").getAsString(),
+                        item -> new Item<>(item.get(NAME).getAsString()), (a, b) -> b));
+    }
 
-        JsonArray categories = parseHttpResponseAndGetItems(responseBody, "categories");
+    private static Item<String> getPlaylist(JsonObject playlist) {
+        String name = playlist.get(NAME).getAsString();
+        String url = getExternalUrl(playlist);
+        return new Item<>(String.format("%s\n%s\n", name, url));
+    }
 
-        return IntStream.range(0, categories.size())
-                .mapToObj(i -> categories.get(i).getAsJsonObject())
-                .collect(Collectors.toMap(
-                        item -> item.get("id").getAsString(),
-                        item -> new Item<>(item.get(NAME).getAsString()),
-                        (a, b) -> b)
-                );
+    private static Item<String> getNewRelease(JsonObject album) {
+        String title = album.get(NAME).getAsString();
+        JsonArray artists = album.get("artists").getAsJsonArray();
+        List<String> list = artists.asList()
+                .stream()
+                .map(JsonElement::getAsJsonObject)
+                .map(artist -> artist.get(NAME).getAsString())
+                .collect(Collectors.toList());
+
+        String externalUrl = getExternalUrl(album);
+        return new Item<>(String.format("%s\n%s\n%s\n", title, list, externalUrl));
     }
 }

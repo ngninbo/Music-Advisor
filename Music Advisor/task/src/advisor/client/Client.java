@@ -33,14 +33,14 @@ public class Client {
      * @param url Full endpoint url
      * @return Client instance
      */
-    public Client createHttpRequest(String accessToken, String tokenType, String url) {
+    public Client createHttpGetRequest(String accessToken, String tokenType, String url) {
         request = HttpRequest.newBuilder()
                 .header("Authorization", tokenType + " " + accessToken)
                 .uri(URI.create(url))
                 .GET()
                 .build();
 
-        return this;
+        return INSTANCE;
     }
 
     /**
@@ -68,11 +68,11 @@ public class Client {
     public Client createHttpPostRequest(String url, String requestData) {
 
         request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
                 .header("Content-Type", "application/x-www-form-urlencoded")
+                .uri(URI.create(url))
                 .POST(HttpRequest.BodyPublishers.ofString(requestData))
                 .build();
 
-        return this;
+        return INSTANCE;
     }
 }

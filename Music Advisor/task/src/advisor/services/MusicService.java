@@ -95,7 +95,7 @@ public class MusicService implements RemoteMusicService {
     }
 
     private Client getClient(String endpoint) {
-        return client.createHttpRequest(accessToken, tokenType, endpoint);
+        return client.createHttpGetRequest(accessToken, tokenType, endpoint);
     }
 
     private String getUrl(String endpointKey) {
