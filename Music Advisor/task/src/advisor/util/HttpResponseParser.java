@@ -53,8 +53,7 @@ public class HttpResponseParser {
     }
 
     public static JsonArray parseHttpResponseAndGetItems(String responseBody, String key) {
-        return JsonParser.parseString(responseBody)
-                .getAsJsonObject()
+        return parseHttpResponse(responseBody)
                 .get(key)
                 .getAsJsonObject()
                 .getAsJsonArray("items");
@@ -93,14 +92,13 @@ public class HttpResponseParser {
 
     private static Item<String> getNewRelease(JsonObject album) {
         String title = album.get(NAME).getAsString();
-        JsonArray artists = album.get("artists").getAsJsonArray();
-        List<String> list = artists.asList()
+        List<String> artists = album.get("artists").getAsJsonArray().asList()
                 .stream()
                 .map(JsonElement::getAsJsonObject)
                 .map(artist -> artist.get(NAME).getAsString())
                 .collect(Collectors.toList());
 
         String externalUrl = getExternalUrl(album);
-        return new Item<>(String.format("%s\n%s\n%s\n", title, list, externalUrl));
+        return new Item<>(String.format("%s\n%s\n%s\n", title, artists, externalUrl));
     }
 }

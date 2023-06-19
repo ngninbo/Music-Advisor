@@ -62,15 +62,17 @@ public class MusicService implements RemoteMusicService {
 
     @Override
     public List<Item<String>> getPlaylistByCategory(String category) {
-        Optional<String> id = getCategoryId(category);
-        if (id.isPresent()) {
-            String responseBody = getClient(String.format("%s/%s/playlists", getUrl("CATEGORIES_ENDPOINT"), id.get()))
-                    .sendHttpRequest();
-            if (HttpResponseParser.httpResponseBodyContainsError(responseBody)) {
-                System.out.println(HttpResponseParser.getErrorMessage(responseBody));
-            } else {
-                return HttpResponseParser.extractPlaylists(responseBody);
-            }
+        return getCategoryId(category).map(this::getPlayLists).orElse(List.of());
+    }
+
+    private List<Item<String>> getPlayLists(String id) {
+
+        String responseBody = getClient(String.format("%s/%s/playlists", getUrl("CATEGORIES_ENDPOINT"), id))
+                .sendHttpRequest();
+        if (HttpResponseParser.httpResponseBodyContainsError(responseBody)) {
+            System.out.println(HttpResponseParser.getErrorMessage(responseBody));
+        } else {
+            return HttpResponseParser.extractPlaylists(responseBody);
         }
 
         return List.of();
