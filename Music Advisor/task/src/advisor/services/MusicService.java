@@ -20,7 +20,6 @@ public class MusicService implements RemoteMusicService {
     private final String resourceUrl;
     private final String accessToken;
     private final String tokenType;
-    private Map<String, Item<String>> categoryMap = Map.of();
 
     private Properties properties;
 
@@ -85,11 +84,8 @@ public class MusicService implements RemoteMusicService {
      * @return Optional Category id
      */
     private Optional<String> getCategoryId(String category) {
-        if (categoryMap.isEmpty()) {
-            categoryMap = getCategoryMap();
-        }
-
-        return categoryMap.entrySet()
+        return getCategoryMap()
+                .entrySet()
                 .stream()
                 .filter(el -> category.equalsIgnoreCase(el.getValue().getT()))
                 .findFirst()
