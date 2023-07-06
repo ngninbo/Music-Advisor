@@ -7,8 +7,6 @@ package advisor.controller;
  */
 public interface AdvisorController {
     boolean isAccessGranted();
-
-    void log(String messageKey);
     void auth();
     void viewNewAlbums();
     void viewFeaturePlaylist();

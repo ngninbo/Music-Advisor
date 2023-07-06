@@ -3,7 +3,7 @@ package advisor.auth;
 import advisor.client.Client;
 import advisor.util.HttpResponseParser;
 import advisor.server.Server;
-import advisor.util.MessageProperties;
+import advisor.util.MessageLogger;
 import advisor.util.PropertiesLoader;
 
 import java.io.IOException;
@@ -66,7 +66,7 @@ public class BaseOAuth {
     }
 
     private void print(String messageKey) {
-        System.out.println(MessageProperties.getMessage(messageKey));
+        MessageLogger.log(messageKey);
     }
 
     private void requestAccessToken() {

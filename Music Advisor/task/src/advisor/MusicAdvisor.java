@@ -6,6 +6,8 @@ import advisor.controller.Command;
 
 import java.util.Scanner;
 
+import static advisor.util.MessageLogger.log;
+
 public class MusicAdvisor {
 
     private final AdvisorController advisorController;
@@ -35,7 +37,7 @@ public class MusicAdvisor {
 
         switch (command) {
             case EXIT:
-                advisorController.log("GOODBYE");
+                log("GOODBYE");
                 break;
             case AUTH:
                 advisorController.auth();
@@ -49,7 +51,7 @@ public class MusicAdvisor {
     private void execute(Command command) {
 
         if (!advisorController.isAccessGranted()) {
-            advisorController.log("PROVIDE_ACCESS_FOR_APPLICATION");
+            log("PROVIDE_ACCESS_FOR_APPLICATION");
             return;
         }
 
@@ -74,7 +76,7 @@ public class MusicAdvisor {
                 advisorController.prev();
                 break;
             default:
-                advisorController.log("UNKNOWN_COMMAND");
+                log("UNKNOWN_COMMAND");
         }
     }
 }

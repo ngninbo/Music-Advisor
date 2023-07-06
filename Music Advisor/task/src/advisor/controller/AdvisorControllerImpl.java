@@ -5,7 +5,6 @@ import advisor.models.Item;
 import advisor.services.MusicService;
 import advisor.services.MusicServiceBuilder;
 import advisor.util.ArgumentMapper;
-import advisor.util.MessageProperties;
 import advisor.util.PropertiesLoader;
 import advisor.view.ViewerContext;
 import advisor.view.Viewer;
@@ -14,6 +13,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import static advisor.util.MessageLogger.log;
 
 public class AdvisorControllerImpl implements AdvisorController {
 
@@ -48,12 +49,6 @@ public class AdvisorControllerImpl implements AdvisorController {
     public boolean isAccessGranted() {
         return accessGranted;
     }
-
-    @Override
-    public void log(String messagesKey) {
-        System.out.println(MessageProperties.getMessage(messagesKey));
-    }
-
 
     @Override
     public void auth() {

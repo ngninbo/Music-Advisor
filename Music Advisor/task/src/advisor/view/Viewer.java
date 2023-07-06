@@ -1,7 +1,7 @@
 package advisor.view;
 
 import advisor.models.Item;
-import advisor.util.MessageProperties;
+import advisor.util.MessageLogger;
 
 import java.util.List;
 
@@ -79,10 +79,10 @@ public class Viewer implements ItemViewStrategy {
     }
 
     private void printReport() {
-        System.out.println(MessageProperties.getMessage("CURRENT_PAGE_REPORT", actualPage, totalPages));
+        MessageLogger.log("CURRENT_PAGE_REPORT", actualPage, totalPages);
     }
 
     private void logNorMorePages() {
-        System.out.println(MessageProperties.getMessage("NO_MORE_PAGES"));
+        MessageLogger.log("NO_MORE_PAGES");
     }
 }

@@ -1,6 +1,6 @@
 package advisor.view;
 
-import advisor.util.MessageProperties;
+import advisor.util.MessageLogger;
 
 import java.util.Optional;
 
@@ -26,6 +26,6 @@ public class ViewerContext {
     }
 
     private void printListIsEmpty() {
-        System.out.println(MessageProperties.getMessage("SELECT_LIST_FIRST"));
+        MessageLogger.log("SELECT_LIST_FIRST");
     }
 }
