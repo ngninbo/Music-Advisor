@@ -1,7 +1,7 @@
 package advisor.controller;
 
 import advisor.auth.BaseOAuth;
-import advisor.models.Item;
+import advisor.models.ItemList;
 import advisor.services.MusicService;
 import advisor.services.MusicServiceBuilder;
 import advisor.util.ArgumentMapper;
@@ -10,7 +10,6 @@ import advisor.view.ViewerContext;
 import advisor.view.Viewer;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -83,7 +82,7 @@ public class AdvisorControllerImpl implements AdvisorController {
 
     @Override
     public void viewPlaylistByCategory(String category) {
-        List<Item<String>> items = musicService.getPlaylistByCategory(category);
+        ItemList items = musicService.getPlaylistByCategory(category);
 
         if (items.size() > 0) {
             viewerContext.setStrategy(new Viewer(items, page)).show();

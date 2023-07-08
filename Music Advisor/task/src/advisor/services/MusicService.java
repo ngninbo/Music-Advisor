@@ -2,6 +2,7 @@ package advisor.services;
 
 import advisor.client.Client;
 import advisor.models.Item;
+import advisor.models.ItemList;
 import advisor.util.HttpResponseParser;
 import advisor.util.PropertiesLoader;
 
@@ -39,8 +40,8 @@ public class MusicService implements RemoteMusicService {
     }
     
     @Override
-    public List<Item<String>> getCategories() {
-        return new ArrayList<>(getCategoryMap().values());
+    public ItemList getCategories() {
+        return new ItemList(getCategoryMap().values());
     }
 
     public Map<String, Item<String>> getCategoryMap() {
@@ -48,23 +49,23 @@ public class MusicService implements RemoteMusicService {
     }
 
     @Override
-    public List<Item<String>> getNewReleases() {
+    public ItemList getNewReleases() {
         return HttpResponseParser.extractReleases(getClient(getUrl("RELEASE_ENDPOINT")).sendHttpRequest());
     }
 
 
     @Override
-    public List<Item<String>> getFeaturedPlaylist() {
+    public ItemList getFeaturedPlaylist() {
         return HttpResponseParser.extractPlaylists(getClient(getUrl("FEATURED_PLAYLIST_ENDPOINT"))
                 .sendHttpRequest());
     }
 
     @Override
-    public List<Item<String>> getPlaylistByCategory(String category) {
-        return getCategoryId(category).map(this::getPlayLists).orElse(List.of());
+    public ItemList getPlaylistByCategory(String category) {
+        return getCategoryId(category).map(this::getPlayLists).orElse(ItemList.of());
     }
 
-    private List<Item<String>> getPlayLists(String id) {
+    private ItemList getPlayLists(String id) {
 
         String responseBody = getClient(String.format("%s/%s/playlists", getUrl("CATEGORIES_ENDPOINT"), id))
                 .sendHttpRequest();
@@ -74,7 +75,7 @@ public class MusicService implements RemoteMusicService {
             return HttpResponseParser.extractPlaylists(responseBody);
         }
 
-        return List.of();
+        return ItemList.of();
     }
 
     /**

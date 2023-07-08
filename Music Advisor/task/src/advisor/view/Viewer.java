@@ -1,20 +1,19 @@
 package advisor.view;
 
 import advisor.models.Item;
+import advisor.models.ItemList;
 import advisor.util.MessageLogger;
-
-import java.util.List;
 
 public class Viewer implements ItemViewStrategy {
 
-    private final List<Item<String>> itemList;
+    private final ItemList itemList;
     private final int page;
     private final int totalPages;
     private int actualPage;
     private int start;
     private int end;
 
-    public Viewer(List<Item<String>> items, int page) {
+    public Viewer(ItemList items, int page) {
         this.itemList = items;
         this.page = page;
         int numPages = itemList.size() / page;

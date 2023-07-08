@@ -1,6 +1,7 @@
 package advisor.util;
 
 import advisor.models.Item;
+import advisor.models.ItemList;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -20,13 +21,13 @@ public class HttpResponseParser {
      * @param response Body of http response
      * @return List of Items
      */
-    public static List<Item<String>> extractPlaylists(String response) {
+    public static ItemList extractPlaylists(String response) {
         return parseHttpResponseAndGetItems(response, "playlists")
                 .asList()
                 .stream()
                 .map(JsonElement::getAsJsonObject)
                 .map(HttpResponseParser::getPlaylist)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ItemList::new));
     }
 
     /**
@@ -35,13 +36,13 @@ public class HttpResponseParser {
      * @param responseBody Http response body
      * @return List of new releases
      */
-    public static List<Item<String>> extractReleases(String responseBody) {
+    public static ItemList extractReleases(String responseBody) {
         return parseHttpResponseAndGetItems(responseBody, "albums")
                 .asList()
                 .stream()
                 .map(JsonElement::getAsJsonObject)
                 .map(HttpResponseParser::getNewRelease)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ItemList::new));
     }
 
     private static String getExternalUrl(JsonObject jsonObject) {
